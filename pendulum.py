@@ -83,7 +83,7 @@ class Pendulum(object):
         
     def __init__(self, initial_theta):
         # deta t
-        self.dt = 0.01
+        self.dt = 0.02
         self.t = 0.0
         self.initial_theta = initial_theta
 
@@ -137,13 +137,14 @@ class Pendulum(object):
         return np.copy(self.state_list)
 
     def terminal(self):
-        p = 1 - abs(self.x[2] / pi - 1)
-        return self.t >= self.end or abs(self.x[0]) > self.max_x or p > (Pendulum.range + 0.15)
+        # p = 1 - abs(self.x[2] / pi - 1)
+        # return self.t >= self.end or abs(self.x[0]) > self.max_x or p > (Pendulum.range + 0.15)
         # return self.t >= self.end or abs(self.x[0]) > self.max_x
+        return self.score() < .4
 
     def score(self):
         if abs(self.x[0]) < self.max_x:
-            return pow(abs(pi - self.x[2]) / pi, 27)
+            return pow(abs(pi - self.x[2]) / pi, 9)
         else:
             return 0
 
@@ -152,9 +153,9 @@ class Pendulum(object):
             return 0.0
 
         elif action == 1:
-            return -10.0
+            return -20.0
         elif action == 2:
-            return 10.0
+            return 20.0
         elif action == 3:
             return -5.0
         elif action == 4:

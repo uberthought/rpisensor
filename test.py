@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 
 from pendulum import Pendulum
-from network import ActorCritic
+from network import DQN
 
 import numpy as np
 import pickle
@@ -15,7 +15,7 @@ if os.path.exists('experiences.p'):
 print('experiences ', len(experiences))
 
 
-def run_test(count, actorCritic):
+def run_test(count, dqn):
     pendulum = Pendulum(Pendulum.random_theta())
     cumulative_score = 0
     cumulative_iterations = 0
@@ -29,7 +29,7 @@ def run_test(count, actorCritic):
 
             state0 = pendulum.state()
 
-            actions = actorCritic.run_actor([state0])
+            actions = dqn.run([state0])
             action1 = np.argmax(actions)
 
             score = pendulum.score()
@@ -41,11 +41,11 @@ def run_test(count, actorCritic):
             score1 = pendulum.score()
 
             if action0:
-                experience = {'state0': state0, 'action0': action0, 'state1': state1, 'action1': action1, 'score1': score1}
+                experience = {'state0': state0, 'action0': action0, 'state1': state1, 'action1': action1, 'score1': score1, 'terminal': terminal}
                 experiences.append(experience)
             action0 = action1
 
-            # print(action1, actions, state1[Pendulum.state_size - 1])
+            print(action1, actions, state1[Pendulum.state_size - 1])
 
             cumulative_score_run += score1
             iterations += 1
@@ -58,8 +58,8 @@ def run_test(count, actorCritic):
 
     return cumulative_score / count, cumulative_iterations / count
 
-actorCritic = ActorCritic(Pendulum.state_size, Pendulum.action_size)
-score, iterations = run_test(27, actorCritic)
+dqn = DQN(Pendulum.state_size, Pendulum.action_size)
+score, iterations = run_test(27, dqn)
 
 print('score', score, 'iterations', iterations)
 

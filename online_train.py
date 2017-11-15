@@ -1,14 +1,14 @@
 #!/usr/bin/python3
 
 from pendulum import Pendulum
-from network import ActorCritic
+from network import DQN
 
 import numpy as np
 import pickle
 import os.path
 import random
 
-actorCritic = ActorCritic(Pendulum.state_size, Pendulum.action_size)
+dqn = DQN(Pendulum.state_size, Pendulum.action_size)
 
 experiences = []
 if os.path.exists('experiences.p'):
@@ -26,7 +26,7 @@ while round < 27:
 
     state0 = pendulum.state()
     
-    actions = actorCritic.run_actor([state0])
+    actions = dqn.run([state0])
     if random.random() < 0.25:
         action1 = np.random.choice(Pendulum.action_size, 1)[0]
     else:
@@ -42,7 +42,7 @@ while round < 27:
     # print('action1', action1, 'score1', score1, 'state0', state0)
 
     if action0:
-        experience = {'state0': state0, 'action0': action0, 'state1': state1, 'action1': action1, 'score1': score1}
+        experience = {'state0': state0, 'action0': action0, 'state1': state1, 'action1': action1, 'score1': score1, 'terminal': terminal}
         experiences.append(experience)
     action0 = action1
 
@@ -53,15 +53,14 @@ while round < 27:
         round += 1
 
         # train
-        critic_loss = actorCritic.train_critic(experiences, 4000)
-        actor_loss = actorCritic.train_actor(experiences, 500)
+        loss = dqn.train(experiences)
 
         average_iterations = cumulative_iterations / round
 
-        print('round', round, 'critic loss', critic_loss, 'actor loss', actor_loss, 'score1', score1, 'iterations', iteration, 'average iterations', average_iterations, 'initial theta', pendulum.initial_theta)
+        print('round', round, 'loss', loss, 'score1', score1, 'iterations', iteration, 'average iterations', average_iterations, 'initial theta', pendulum.initial_theta)
 
         pickle.dump(experiences, open("experiences.p", "wb"))
-        actorCritic.save()
+        dqn.save()
 
         pendulum = Pendulum(Pendulum.random_theta())
 

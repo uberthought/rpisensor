@@ -53,30 +53,16 @@ class DQN:
         # else:
         #     training_experiences = np.random.choice(experiences, len(experiences))
 
-        training_experiences = experiences
+        training_experiences = experiences.get()
 
         for experience in training_experiences:
-            state0 = experience['state0']
-            action = experience['action0']
-            state1 = experience['state1']
-            score = experience['score1']
-            terminal = experience['terminal']
+            actions0 = self.run([experience.state0])
+            actions1 = self.run([experience.state1])
+            discount_factor = .9999
+            actions0[0][experience.action] = sigmoid(experience.value + discount_factor * np.max(actions1))
 
-            actions0 = self.run([state0])
-
-            if terminal:
-                actions0[0][action] = sigmoid(score)
-            else:
-                actions1 = self.run([state1])
-                discount_factor = .9999
-                actions0[0][action] = sigmoid(score + discount_factor * np.max(actions1))
-
-            # print(actions0, state1)
-
-
-            X = np.concatenate((X, np.reshape(state0, (1, self.state_size))), axis=0)
+            X = np.concatenate((X, np.reshape(experience.state0, (1, self.state_size))), axis=0)
             Y = np.concatenate((Y, actions0), axis=0)
-
 
         feed_dict = {self.state_input: X, self.expected: Y, self.stddev: 0.01}
         loss =  math.inf

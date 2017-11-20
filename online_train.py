@@ -1,70 +1,46 @@
 #!/usr/bin/python3
 
-from pendulum import Pendulum
 from network import DQN
+from Simulation import Simulation
+from Experiences import Experiences
 
 import numpy as np
-import pickle
-import os.path
 import random
 
-dqn = DQN(Pendulum.state_size, Pendulum.action_size)
+dqn = DQN(5, 2)
 
-experiences = []
-if os.path.exists('experiences.p'):
-    experiences = pickle.load(open("experiences.p", "rb"))
-print('experiences', len(experiences))
+experiences = Experiences()
+simulation = Simulation()
 
-pendulum = Pendulum(Pendulum.random_theta())
-round = 0
-score = 1
+print('experiences ', len(experiences.get()))
+
 iteration = 0
-cumulative_iterations = 0
-action0 = False
+temperature, humidity, timestamp, value = simulation.step()
+isOn = simulation.isOn()
+temperature_list = [temperature] * 4
+state0 = list(temperature_list)
+state0.append(1 if isOn else 0)
 
-while round < 27:
+for iteration in range(27):
 
-    state0 = pendulum.state()
-    
     actions = dqn.run([state0])
     if random.random() < 0.25:
-        action1 = np.random.choice(Pendulum.action_size, 1)[0]
+        action = np.random.choice(2, 1)[0]
     else:
-        action1 = np.argmax(actions)
+        action = np.argmax(actions)
 
-    # Take the action1 (aa) and observe the the outcome state (s′s′) and reward (rr).
-    pendulum.rk4_step(pendulum.dt, action1)
+    temperature, humidity, timestamp, value = simulation.step()
+    isOn = simulation.isOn()
 
-    state1 = pendulum.state()
-    terminal = pendulum.terminal()
-    score1 = pendulum.score()
+    del temperature_list[0]
+    temperature_list.append(temperature)
 
-    # print('action1', action1, 'score1', score1, 'state0', state0)
+    state1 = list(temperature_list)
+    state1.append(1 if isOn else 0)
+    experiences.add(state0, state1, action, value)
+    state0 = state1
 
-    if action0:
-        experience = {'state0': state0, 'action0': action0, 'state1': state1, 'action1': action1, 'score1': score1, 'terminal': terminal}
-        experiences.append(experience)
-    action0 = action1
+    loss = dqn.train(experiences)
+    print(loss)
 
-    iteration += 1
-    cumulative_iterations += 1
-
-    if terminal:
-        round += 1
-
-        # train
-        loss = dqn.train(experiences)
-
-        average_iterations = cumulative_iterations / round
-
-        print('round', round, 'loss', loss, 'score1', score1, 'iterations', iteration, 'average iterations', average_iterations, 'initial theta', pendulum.initial_theta)
-
-        pickle.dump(experiences, open("experiences.p", "wb"))
-        dqn.save()
-
-        pendulum = Pendulum(Pendulum.random_theta())
-
-        score = 1
-        iteration = 0
-        action0 = False
-
+dqn.save()

@@ -21,10 +21,8 @@ dqn = DQN(2, 2)
 print('experiences ', len(experiences.get()))
 
 temperature, humidity, timestamp, value = simulation.step()
-isOn = simulation.isOn()
 temperature_list = [temperature] * 2
 state0 = list(temperature_list)
-# state0.append(1 if isOn else 0)
 
 for iteration in range(2700):
 
@@ -46,10 +44,16 @@ for iteration in range(2700):
     temperature_list.append(temperature)
 
     state1 = list(temperature_list)
-    # state1.append(1 if isOn else 0)
     experiences.add(state0, state1, action, value)
     state0 = state1
 
     print('states', state0, 'on', isOn, 'value', value)
+
+    if temperature < -3 or temperature > 3:
+        simulation = Simulation()
+        temperature, humidity, timestamp, value = simulation.step()
+        temperature_list = [temperature] * 2
+        state0 = list(temperature_list)
+
 
     # time.sleep(5)

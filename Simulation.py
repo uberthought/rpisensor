@@ -5,10 +5,12 @@ import math
 import random
 
 class Simulation:
+    target = 27
+    
     def __init__(self):
         self.t = 0
         self.tdelta = 1
-        self.temperature = 27 + (random.random() - 0.5) * 2
+        self.temperature = Simulation.target + (random.random() - 0.5) * 2
         self.humidity = 50
         self.on = False
 
@@ -22,13 +24,15 @@ class Simulation:
 
         self.temperature -= 5 / 60
 
-        return self.temperature, self.humidity, timestamp, self.getValue()
+        delta = math.floor((self.temperature - Simulation.target) * 10)
+
+        return delta, self.humidity, timestamp, self.getValue()
 
     def isOn(self):
         return self.on
 
     def getValue(self):
-        return -math.pow(math.fabs(self.temperature - 27), 3)
+        return -math.pow(math.fabs(self.temperature - Simulation.target), 3)
 
     def switchOn(self):
         self.on = True

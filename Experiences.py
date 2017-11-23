@@ -1,5 +1,6 @@
 import pickle
 import os.path
+import numpy as np
 
 class Experience:
     def __init__(self, state0, state1, action, value):

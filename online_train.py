@@ -17,7 +17,7 @@ print('experiences ', len(experiences.get()))
 
 iteration = 0
 temperature, humidity, timestamp, value = simulation.step()
-temperature_list = [math.floor(temperature * 10)] * 2
+temperature_list = [temperature] * 2
 state0 = list(temperature_list)
 
 for iteration in range(270):
@@ -36,7 +36,7 @@ for iteration in range(270):
     temperature, humidity, timestamp, value = simulation.step()
 
     del temperature_list[0]
-    temperature_list.append(math.floor(temperature * 10))
+    temperature_list.append(temperature)
 
     state1 = list(temperature_list)
     experiences.add(state0, state1, action, value)
@@ -46,9 +46,3 @@ for iteration in range(270):
     print(state0, action, 'actions', actions, 'value', value, 'loss', loss)
 
     dqn.save()
-
-    if temperature < 22 or temperature > 32:
-        simulation = Simulation()
-        temperature, humidity, timestamp, value = simulation.step()
-        temperature_list = [math.floor(temperature * 10)] * 2
-        state0 = list(temperature_list)

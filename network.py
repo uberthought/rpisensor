@@ -14,17 +14,13 @@ class DQN:
         self.state_size = state_size
         self.action_size = action_size
 
-        self.stddev = tf.placeholder_with_default(0.0, [])
-
         self.state_input = tf.placeholder(tf.float32, shape=(None, state_size))
-        noise_vector = tf.random_normal(shape=tf.shape(self.state_input), mean=0.0, stddev=self.stddev, dtype=tf.float32)
-        noise = tf.add(self.state_input, noise_vector)
 
-        units = 8
-        hidden1 = tf.layers.dense(inputs=noise, units=units, activation=tf.nn.relu)
-        hidden2 = tf.layers.dense(inputs=hidden1, units=units, activation=tf.nn.relu)
-        # hidden3 = tf.layers.dense(inputs=hidden2, units=units, activation=tf.nn.relu)
-        self.prediction = tf.layers.dense(inputs=hidden2, units=self.action_size)
+        units = 32
+        hidden1 = tf.layers.dense(inputs=self.state_input, units=units, activation=tf.nn.tanh)
+        hidden2 = tf.layers.dense(inputs=hidden1, units=units, activation=tf.nn.tanh)
+        hidden3 = tf.layers.dense(inputs=hidden2, units=units, activation=tf.nn.tanh)
+        self.prediction = tf.layers.dense(inputs=hidden3, units=self.action_size)
         self.expected = tf.placeholder(tf.float32, shape=(None, self.action_size))
         self.loss = tf.reduce_mean(tf.losses.mean_squared_error(self.expected, self.prediction))
         self.run_train = tf.train.AdagradOptimizer(.1).minimize(self.loss)
@@ -48,27 +44,26 @@ class DQN:
         X = np.array([], dtype=np.float).reshape(0, self.state_input.shape[1])
         Y = np.array([], dtype=np.float).reshape(0, self.action_size)
 
-        if (len(experiences.get()) > 1000):
-            training_experiences = np.random.choice(experiences.get(), 1000)
-        else:
-            training_experiences = experiences.get()
+        # if (len(experiences.get()) > 100):
+        #     training_experiences = np.random.choice(experiences.get(), 100)
+        # else:
+        #     training_experiences = experiences.get()
 
-        # training_experiences = experiences.get()
+        training_experiences = experiences.get()
 
         for experience in training_experiences:
             actions0 = self.run([experience.state0])
             actions1 = self.run([experience.state1])
-            discount_factor = .1
+            discount_factor = .0
             actions0[0][experience.action] = experience.value + discount_factor * np.max(actions1)
 
             X = np.concatenate((X, np.reshape(experience.state0, (1, self.state_size))), axis=0)
             Y = np.concatenate((Y, actions0), axis=0)
 
-        # feed_dict = {self.state_input: X, self.expected: Y, self.stddev: 0.01}
         feed_dict = {self.state_input: X, self.expected: Y}
         loss =  math.inf
         i = 0
-        while loss > 1 and i < 100:
+        while loss > 1 and i < 1000:
             i += 1;
             loss, _ = self.sess.run([self.loss, self.run_train], feed_dict=feed_dict)
         return loss

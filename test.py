@@ -18,11 +18,11 @@ simulation = Simulation()
 dqn = DQN(2, 2)
 
 temperature, humidity, timestamp, value = simulation.step()
-temperature_list = [math.floor(temperature * 10)] * 2
+temperature_list = [temperature] * 2
 state0 = list(temperature_list)
 iterations = 0
 
-while temperature >= 22 and temperature <= 32:
+while temperature >= -30 and temperature <= 30:
     iterations += 1
 
     # temperature, humidity, timestamp = sensor.gather()
@@ -38,7 +38,7 @@ while temperature >= 22 and temperature <= 32:
     temperature, humidity, timestamp, value = simulation.step()
 
     del temperature_list[0]
-    temperature_list.append(math.floor(temperature * 10))
+    temperature_list.append(temperature)
 
     state0 = list(temperature_list)
 

@@ -2,12 +2,13 @@
 
 import datetime
 import math
+import random
 
 class Simulation:
     def __init__(self):
         self.t = 0
         self.tdelta = 1
-        self.temperature = 27
+        self.temperature = 27 + (random.random() - 0.5) * 2
         self.humidity = 50
         self.on = False
 
@@ -17,9 +18,9 @@ class Simulation:
         timestamp += datetime.timedelta(minutes=self.t)
 
         if self.on:
-            self.temperature += 10 / 60
-        else:
-            self.temperature -= 1 / 60
+            self.temperature += 20 / 60
+
+        self.temperature -= 5 / 60
 
         return self.temperature, self.humidity, timestamp, self.getValue()
 
@@ -27,4 +28,11 @@ class Simulation:
         return self.on
 
     def getValue(self):
-        return math.fabs(self.temperature - 27)
+        return -math.pow(math.fabs(self.temperature - 27), 3)
+
+    def switchOn(self):
+        self.on = True
+
+    def switchOff(self):
+        self.on = False
+

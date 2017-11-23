@@ -3,10 +3,12 @@
 # import os.path
 import time
 # import datetime
+import numpy as np
 
 # from Sensor import Sensor
 # from Solenoid import Solenoid
 
+from network import DQN
 from Simulation import Simulation
 from Experiences import Experiences
 
@@ -14,25 +16,40 @@ from Experiences import Experiences
 # solenoid = Solenoid()
 experiences = Experiences()
 simulation = Simulation()
+dqn = DQN(2, 2)
 
 print('experiences ', len(experiences.get()))
 
-temperature, humidity, timestamp = simulation.step()
-state_list = [temperature] * 4
+temperature, humidity, timestamp, value = simulation.step()
+isOn = simulation.isOn()
+temperature_list = [temperature] * 2
+state0 = list(temperature_list)
+# state0.append(1 if isOn else 0)
 
-for iteration in range(27):
+for iteration in range(2700):
 
     # temperature, humidity, timestamp = sensor.gather()
     # isOn = solenoid.isOn()
 
-    temperature, humidity, timestamp = simulation.step()
+    actions = dqn.run([state0])
+    action = np.argmax(actions)
+
+    if action == 0:
+        simulation.switchOff()
+    else:
+        simulation.switchOn()
+
+    temperature, humidity, timestamp, value = simulation.step()
     isOn = simulation.isOn()
 
-    del state_list[0]
-    state_list.append(temperature)
+    del temperature_list[0]
+    temperature_list.append(temperature)
 
-    experiences.add(temperature, humidity, isOn, timestamp)
+    state1 = list(temperature_list)
+    # state1.append(1 if isOn else 0)
+    experiences.add(state0, state1, action, value)
+    state0 = state1
 
-    print('states', state_list, 'humidity', humidity, 'on', isOn, 'time', timestamp)
+    print('states', state0, 'on', isOn, 'value', value)
 
     # time.sleep(5)

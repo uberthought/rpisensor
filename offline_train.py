@@ -1,16 +1,12 @@
 #!/usr/bin/python3
 
-from pendulum import Pendulum
 from network import DQN
+from Experiences import Experiences
 
-import pickle
-import os.path
+dqn = DQN(2, 2)
+experiences = Experiences()
 
-dqn = DQN(Pendulum.state_size, Pendulum.action_size)
-
-if os.path.exists('experiences.p'):
-    experiences = pickle.load(open("experiences.p", "rb"))
-print('experiences ', len(experiences))
+print('experiences ', len(experiences.get()))
 
 for i in range(270):
     loss = dqn.train(experiences)

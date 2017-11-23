@@ -1,67 +1,48 @@
 #!/usr/bin/python3
 
-from pendulum import Pendulum
-from network import DQN
-
+# import os.path
+import time
+# import datetime
 import numpy as np
-import pickle
-import os.path
 import math
-import random
 
-experiences = []
-if os.path.exists('experiences.p'):
-    experiences = pickle.load(open("experiences.p", "rb"))
-print('experiences ', len(experiences))
+# from Sensor import Sensor
+# from Solenoid import Solenoid
 
+from network import DQN
+from Simulation import Simulation
 
-def run_test(count, dqn):
-    pendulum = Pendulum(Pendulum.random_theta())
-    cumulative_score = 0
-    cumulative_iterations = 0
-    runs = 0
+# sensor = Sensor()
+# solenoid = Solenoid()
+simulation = Simulation()
+dqn = DQN(2, 2)
 
-    for i in range(count):
-        cumulative_score_run = 0
-        iterations = 0
-        action0 = False
-        while not pendulum.terminal():
+temperature, humidity, timestamp, value = simulation.step()
+temperature_list = [math.floor(temperature * 10)] * 2
+state0 = list(temperature_list)
+iterations = 0
 
-            state0 = pendulum.state()
+while temperature >= 22 and temperature <= 32:
+    iterations += 1
 
-            actions = dqn.run([state0])
-            action1 = np.argmax(actions)
+    # temperature, humidity, timestamp = sensor.gather()
 
-            score = pendulum.score()
+    actions = dqn.run([state0])
+    action = np.argmax(actions)
 
-            pendulum.rk4_step(pendulum.dt, action1)
+    if action == 0:
+        simulation.switchOff()
+    else:
+        simulation.switchOn()
 
-            state1 = pendulum.state()
-            terminal = pendulum.terminal()
-            score1 = pendulum.score()
+    temperature, humidity, timestamp, value = simulation.step()
 
-            if action0:
-                experience = {'state0': state0, 'action0': action0, 'state1': state1, 'action1': action1, 'score1': score1, 'terminal': terminal}
-                experiences.append(experience)
-            action0 = action1
+    del temperature_list[0]
+    temperature_list.append(math.floor(temperature * 10))
 
-            print(action1, actions, state1[Pendulum.state_size - 1])
+    state0 = list(temperature_list)
 
-            cumulative_score_run += score1
-            iterations += 1
+    print(state0, action, 'actions', actions, 'value', value)
 
-        print('score final ', score, ' average ', cumulative_score_run / iterations, ' initial theta ', pendulum.initial_theta, ' iterations ', iterations)
-        cumulative_score += score1
-        cumulative_iterations += iterations
-
-        pendulum = Pendulum(Pendulum.random_theta())
-
-    return cumulative_score / count, cumulative_iterations / count
-
-dqn = DQN(Pendulum.state_size, Pendulum.action_size)
-score, iterations = run_test(27, dqn)
-
-print('score', score, 'iterations', iterations)
-
-pickle.dump(experiences, open("experiences.p", "wb"))
-
+    # time.sleep(5)
+print(iterations)

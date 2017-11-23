@@ -16,9 +16,9 @@ simulation = Simulation()
 print('experiences ', len(experiences.get()))
 
 iteration = 0
-temperature, humidity, timestamp, value = simulation.step()
-temperature_list = [temperature] * 2
-state0 = list(temperature_list)
+delta, humidity, timestamp, value = simulation.step()
+state_list = [delta] * 2
+state0 = list(state_list)
 
 for iteration in range(270):
 
@@ -33,12 +33,12 @@ for iteration in range(270):
     else:
         simulation.switchOn()
 
-    temperature, humidity, timestamp, value = simulation.step()
+    delta, humidity, timestamp, value = simulation.step()
 
-    del temperature_list[0]
-    temperature_list.append(temperature)
+    del state_list[0]
+    state_list.append(delta)
 
-    state1 = list(temperature_list)
+    state1 = list(state_list)
     experiences.add(state0, state1, action, value)
     state0 = state1
 

@@ -20,14 +20,13 @@ dqn = DQN(2, 2)
 
 print('experiences ', len(experiences.get()))
 
-temperature, humidity, timestamp, value = simulation.step()
-temperature_list = [temperature] * 2
-state0 = list(temperature_list)
+delta, humidity, timestamp, value = simulation.step()
+state_list = [delta] * 2
+state0 = list(state_list)
 
 for iteration in range(2700):
 
-    # temperature, humidity, timestamp = sensor.gather()
-    # isOn = solenoid.isOn()
+    # delta, humidity, timestamp = sensor.gather()
 
     actions = dqn.run([state0])
     action = np.argmax(actions)
@@ -37,23 +36,22 @@ for iteration in range(2700):
     else:
         simulation.switchOn()
 
-    temperature, humidity, timestamp, value = simulation.step()
-    isOn = simulation.isOn()
+    delta, humidity, timestamp, value = simulation.step()
 
-    del temperature_list[0]
-    temperature_list.append(temperature)
+    del state_list[0]
+    state_list.append(delta)
 
-    state1 = list(temperature_list)
+    state1 = list(state_list)
     experiences.add(state0, state1, action, value)
     state0 = state1
 
-    print('states', state0, 'on', isOn, 'value', value)
+    print(state0, action, 'actions', actions, 'value', value)
 
-    if temperature < -3 or temperature > 3:
+    if simulation.temperature < -24 or simulation.temperature > 30:
         simulation = Simulation()
-        temperature, humidity, timestamp, value = simulation.step()
-        temperature_list = [temperature] * 2
-        state0 = list(temperature_list)
+        delta, humidity, timestamp, value = simulation.step()
+        state_list = [delta] * 2
+        state0 = list(state_list)
 
 
     # time.sleep(5)

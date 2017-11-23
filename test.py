@@ -17,15 +17,15 @@ from Simulation import Simulation
 simulation = Simulation()
 dqn = DQN(2, 2)
 
-temperature, humidity, timestamp, value = simulation.step()
-temperature_list = [temperature] * 2
-state0 = list(temperature_list)
+delta, humidity, timestamp, value = simulation.step()
+state_list = [delta] * 2
+state0 = list(state_list)
 iterations = 0
 
-while temperature >= -30 and temperature <= 30:
+while simulation.temperature >= 24 and simulation.temperature <= 30:
     iterations += 1
 
-    # temperature, humidity, timestamp = sensor.gather()
+    # delta, humidity, timestamp = sensor.gather()
 
     actions = dqn.run([state0])
     action = np.argmax(actions)
@@ -35,14 +35,14 @@ while temperature >= -30 and temperature <= 30:
     else:
         simulation.switchOn()
 
-    temperature, humidity, timestamp, value = simulation.step()
+    delta, humidity, timestamp, value = simulation.step()
 
-    del temperature_list[0]
-    temperature_list.append(temperature)
+    del state_list[0]
+    state_list.append(delta)
 
-    state0 = list(temperature_list)
+    state0 = list(state_list)
 
-    print(state0, action, 'actions', actions, 'value', value)
+    print(simulation.temperature, state0, action, 'actions', actions, 'value', value)
 
     # time.sleep(5)
 print(iterations)

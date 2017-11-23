@@ -22,7 +22,7 @@ class Simulation:
         if self.on:
             self.temperature += 20 / 60
 
-        self.temperature -= 5 / 60
+        self.temperature -= (math.pow(self.temperature, 7) / math.pow(32, 7) * 20) / 60
 
         delta = math.floor((self.temperature - Simulation.target) * 10)
 

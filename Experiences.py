@@ -6,11 +6,13 @@ import math
 from Settings import Settings
 
 class Experience:
-    def __init__(self, temperature, humidity, solenoid, timestamp):
+    def __init__(self, temperature, humidity, solenoid, timestamp, target, target_delta):
         self.temperature = temperature
         self.humidity = humidity
         self.solenoid = solenoid
         self.timestamp = timestamp
+        self.target = target
+        self.target_delta = target_delta
 
 class TrainingExperience:
     def __init__(self, state0, state1, action, value):
@@ -25,8 +27,8 @@ class Experiences:
         if os.path.exists('experiences.p'):
             self.experiences = pickle.load(open("experiences.p", "rb"))
 
-    def add(self, temperature, humidity, solenoid, timestamp):
-        experience = Experience(temperature, humidity, solenoid, timestamp)
+    def add(self, temperature, humidity, solenoid, timestamp, target, target_delta):
+        experience = Experience(temperature, humidity, solenoid, timestamp, target, target_delta)
         self.experiences.append(experience)
         pickle.dump(self.experiences, open("experiences.p", "wb"))
 

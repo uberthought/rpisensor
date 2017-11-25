@@ -1,3 +1,3 @@
 class Settings:
-    target = 25.5
+    target = 24.0
     target_delta = 0.5

@@ -16,11 +16,11 @@ solenoid = Solenoid()
 experiences = Experiences()
 dqn = DQN(4, 2)
 
-temperature, humidity, timestamp = sensor.gather()
-experiences.add(temperature, humidity, solenoid.on, timestamp)
-experience = experiences.getLast()
 target = Settings.target
 target_delta = Settings.target_delta
+temperature, humidity, timestamp = sensor.gather()
+experiences.add(temperature, humidity, solenoid.on, timestamp, target, target_delta)
+experience = experiences.getLast()
 action = 0
 
 while True:
@@ -40,7 +40,7 @@ while True:
         solenoid.switchOn()
 
     temperature, humidity, timestamp = sensor.gather()
-    experiences.add(temperature, humidity, solenoid.on, timestamp)
+    experiences.add(temperature, humidity, solenoid.on, timestamp, target, target_delta)
     experience = experiences.getLast()
-    print(temperature, action, timestamp)
+    print(temperature * 9 / 5 + 32, humidity, action, timestamp)
     time.sleep(5)

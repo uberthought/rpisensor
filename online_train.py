@@ -18,10 +18,10 @@ dqn = DQN(2, 2)
 
 print('experiences ', len(experiences.get()))
 
-temperature, humidity, timestamp = sensor.gather()
 target = Settings.target
 target_delta = Settings.target_delta
-experiences.add(temperature, humidity, solenoid.on, timestamp)
+temperature, humidity, timestamp = sensor.gather()
+experiences.add(temperature, humidity, solenoid.on, timestamp, target, target_delta)
 experience = experiences.getLast()
 state = experience.state0
 action = 0
@@ -45,7 +45,7 @@ for iteration in range(270):
         solenoid.switchOn()
 
     temperature, humidity, timestamp = sensor.gather()
-    experiences.add(temperature, humidity, solenoid.on, timestamp)
+    experiences.add(temperature, humidity, solenoid.on, timestamp, target, target_delta)
     experience = experiences.getLast()
     state = experience.state0
 

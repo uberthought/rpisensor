@@ -7,6 +7,8 @@ class Solenoid:
         GPIO.setwarnings(False)
         GPIO.setmode(GPIO.BCM)
         GPIO.setup(21, GPIO.OUT)
+        GPIO.setup(11, GPIO.OUT)
+        GPIO.output(11, True)
         self.on = False
 
     def switchOn(self):

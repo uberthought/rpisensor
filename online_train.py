@@ -1,55 +1,56 @@
 #!/usr/bin/python3
 
 from network import DQN
-from Simulation import Simulation
+from Sensor import Sensor
+from Solenoid import Solenoid
 from Experiences import Experiences
+from Settings import Settings
 
+import time
 import numpy as np
 import random
 import math
 
-dqn = DQN(2, 2)
-
+sensor = Sensor()
+solenoid = Solenoid()
 experiences = Experiences()
-simulation = Simulation()
+dqn = DQN(2, 2)
 
 print('experiences ', len(experiences.get()))
 
-iteration = 0
-delta, humidity, timestamp, value = simulation.step()
-state_list = [delta] * 2
-state0 = list(state_list)
+temperature, humidity, timestamp = sensor.gather()
+target = Settings.target
+target_delta = Settings.target_delta
+experiences.add(temperature, humidity, solenoid.on, timestamp)
+experience = experiences.getLast()
+state = experience.state0
+action = 0
 
 for iteration in range(270):
 
-    actions = dqn.run([state0])
+    actions = dqn.run([state])
     if random.random() < 0.5:
         action = np.random.choice(2, 1)[0]
     else:
         action = np.argmax(actions)
 
-    if simulation.temperature < 26:
+    if temperature < target - target_delta:
         action = 1
-        print('low')
-    elif simulation.temperature > 28:
+    elif temperature > target + target_delta:
         action = 0
-        print('high')
 
     if action == 0:
-        simulation.switchOff()
+        solenoid.switchOff()
     else:
-        simulation.switchOn()
+        solenoid.switchOn()
 
-    delta, humidity, timestamp, value = simulation.step()
-
-    del state_list[0]
-    state_list.append(delta)
-
-    state1 = list(state_list)
-    experiences.add(state0, state1, action, value)
-    state0 = state1
+    temperature, humidity, timestamp = sensor.gather()
+    experiences.add(temperature, humidity, solenoid.on, timestamp)
+    experience = experiences.getLast()
+    state = experience.state0
 
     loss = dqn.train(experiences)
-    print(simulation.temperature, state0, action, 'actions', actions, 'value', value, 'loss', loss)
+    print(temperature, state, action, 'actions', actions, 'value', experience.value, 'loss', loss)
 
     dqn.save()
+    time.sleep(5)

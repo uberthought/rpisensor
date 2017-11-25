@@ -23,10 +23,17 @@ state0 = list(state_list)
 for iteration in range(270):
 
     actions = dqn.run([state0])
-    if random.random() < 0.1:
+    if random.random() < 0.5:
         action = np.random.choice(2, 1)[0]
     else:
         action = np.argmax(actions)
+
+    if simulation.temperature < 26:
+        action = 1
+        print('low')
+    elif simulation.temperature > 28:
+        action = 0
+        print('high')
 
     if action == 0:
         simulation.switchOff()
@@ -43,6 +50,6 @@ for iteration in range(270):
     state0 = state1
 
     loss = dqn.train(experiences)
-    print(state0, action, 'actions', actions, 'value', value, 'loss', loss)
+    print(simulation.temperature, state0, action, 'actions', actions, 'value', value, 'loss', loss)
 
     dqn.save()

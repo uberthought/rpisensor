@@ -32,6 +32,8 @@ class Simulation:
         return self.on
 
     def getValue(self):
+        if self.temperature < 26 or self.temperature > 28:
+            return -10
         return -math.pow(math.fabs(self.temperature - Simulation.target), 3)
 
     def switchOn(self):

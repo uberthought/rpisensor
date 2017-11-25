@@ -27,9 +27,14 @@ state0 = list(state_list)
 for iteration in range(2700):
 
     # delta, humidity, timestamp = sensor.gather()
-
+35.202.235.6
     actions = dqn.run([state0])
     action = np.argmax(actions)
+
+    if simulation.temperature < 26:
+        action = 1
+    else if simulation.temperature > 28:
+        action = 0
 
     if action == 0:
         simulation.switchOff()

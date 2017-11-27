@@ -38,10 +38,11 @@ class Experiences:
         if len(self.experiences) == 0:
             return result
 
+        settings = Settings()
         experience0 = self.experiences[0]
         state1 = [0] * 2
-        target = Settings.target
-        target_delta = Settings.target_delta
+        target = settings.getTargetC()
+        target_delta = settings.getTargetDelta()
 
         for experience1 in self.experiences:
 

@@ -1,0 +1,45 @@
+<html>
+    
+    <head>
+        <title>Weather Control Central</title>
+        <!-- <style>
+            body {
+                font-size: 200%;
+            }
+
+            input[type=number] {
+                font-size: 200%;
+            }
+
+            input[type=submit] {
+                font-size: 200%;
+            }
+
+            input[type=checkbox] {
+                -ms-transform: scale(2); /* IE */
+                -moz-transform: scale(2); /* FF */
+                -webkit-transform: scale(2); /* Safari and Chrome */
+                -o-transform: scale(2); /* Opera */
+                padding: 10px;
+            }
+        </style> -->
+    </head>
+
+    <body>
+        <h1><div id=message></div></h1>
+        
+            <form method="post" id="form1">
+            <input type="checkbox" id="on" name="on" form="form1" />
+            <label for="on">Power</label>
+            </br>
+            
+            <input type="number" id="target" name="target" min="60" max="80" value="75" form="form1" />
+            <label for="target">Temperature</label>
+            </br>
+
+            <input type="submit" id="save" name="save" value="Save" form="form1" />
+        </form>
+
+    </body>
+
+</html>

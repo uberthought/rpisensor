@@ -9,7 +9,7 @@ def toC(f):
 
 class Settings:
     def __init__(self):
-        self.target = 24.0
+        self.target = toC(75)
         self.target_delta = 0.5
         self.on = False
         self.load()
@@ -24,27 +24,31 @@ class Settings:
     def save(self):
         pickle.dump(self, open("settings.p", "wb"))
 
-    def setOn(self, on): 
-        self.on = on
-        self.save()
+    def setOn(on):
+        settings.load()
+        settings.on = on
+        settings.save()
 
-    def getOn(self):
-        self.load()
-        return self.on
+    def getOn():
+        settings.load()
+        return settings.on
 
-    def setTargetF(self, target): 
-        self.target = toC(target)
-        self.save()
+    def setTargetF(target): 
+        settings.load()
+        settings.target = toC(target)
+        settings.save()
 
-    def getTargetF(self):
-        self.load()
-        return toF(self.target)
+    def getTargetF():
+        settings.load()
+        return toF(settings.target)
 
-    def getTargetC(self):
-        self.load()
-        return self.target
+    def getTargetC():
+        settings.load()
+        return settings.target
 
-    def getTargetDelta(self):
-        self.load()
-        return self.target_delta
+    def getTargetDelta():
+        settings.load()
+        return settings.target_delta
+
+settings = Settings()
 

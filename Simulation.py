@@ -1,44 +1,48 @@
 #!/usr/bin/python3
 
+import pickle
+import os.path
 import datetime
 import math
 import random
 
+from Settings import Settings
+
 class Simulation:
-    target = 27
     
     def __init__(self):
         self.t = 0
         self.tdelta = 1
-        self.temperature = Simulation.target + (random.random() - 0.5) * 2
+        self.temperature = Settings.getTargetC() + (random.random() - 0.5) * 2
         self.humidity = 50
         self.on = False
 
+    def init():
+        if os.path.exists('simulation.p'):
+            return pickle.load(open("simulation.p", "rb"))
+        return Simulation()
+
     def step(self):
         self.t += self.tdelta
-        timestamp = datetime.datetime(2017, 11, 20, 9, 28)
-        timestamp += datetime.timedelta(minutes=self.t)
 
         if self.on:
             self.temperature += 20 / 60
 
-        self.temperature -= (math.pow(self.temperature, 7) / math.pow(32, 7) * 20) / 60
+        self.temperature -= (math.pow(self.temperature, 7) / math.pow(30, 7) * 20) / 60
 
-        delta = math.floor((self.temperature - Simulation.target) * 10)
+        pickle.dump(self, open("simulation.p", "wb"))
 
-        return delta, self.humidity, timestamp, self.getValue()
 
-    def isOn(self):
-        return self.on
-
-    def getValue(self):
-        if self.temperature < 26 or self.temperature > 28:
-            return -10
-        return -math.pow(math.fabs(self.temperature - Simulation.target), 3)
+    def gather(self):
+        timestamp = datetime.datetime.now()
+        return self.temperature, 50, timestamp
 
     def switchOn(self):
         self.on = True
 
     def switchOff(self):
         self.on = False
+
+    def isOn(self):
+        return self.on
 

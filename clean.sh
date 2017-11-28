@@ -1,3 +1,6 @@
 #!/bin/bash
 
-rm -rf experiences.p train
+rm -rf train
+rm experiences.p
+rm settings.p
+rm simulation.p

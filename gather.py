@@ -4,28 +4,32 @@ import time
 import numpy as np
 import math
 
-from Sensor import Sensor
-from Solenoid import Solenoid
+# from Sensor import Sensor
+# from Solenoid import Solenoid
+from Simulation import Simulation
 
 from network import DQN
 from Experiences import Experiences
 from Settings import Settings
 
-sensor = Sensor()
-solenoid = Solenoid()
+
+sensor = solenoid = Simulation()
+# sensor = Sensor()
+# solenoid = Solenoid()
 experiences = Experiences()
 dqn = DQN(4, 2)
 
-target = Settings.target
-target_delta = Settings.target_delta
+target = Settings.getTargetC()
+target_delta = Settings.getTargetDelta()
 temperature, humidity, timestamp = sensor.gather()
-experiences.add(temperature, humidity, solenoid.on, timestamp, target, target_delta)
+experiences.add(temperature, humidity, solenoid.isOn(), timestamp, target, target_delta)
 experience = experiences.getLast()
 action = 0
 
 while True:
 
-    state = experience.state0
+    # experience = experiences.getLast()
+    # state = experience.state0
     # actions = dqn.run([state])
     # action = np.argmax(actions)
 
@@ -40,7 +44,10 @@ while True:
         solenoid.switchOn()
 
     temperature, humidity, timestamp = sensor.gather()
-    experiences.add(temperature, humidity, solenoid.on, timestamp, target, target_delta)
-    experience = experiences.getLast()
+    experiences.add(temperature, humidity, solenoid.isOn(), timestamp, target, target_delta)
     print(temperature * 9 / 5 + 32, humidity, action, timestamp)
+
+    target = Settings.getTargetC()
+    target_delta = Settings.getTargetDelta()
+    
     time.sleep(5)

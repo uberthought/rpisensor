@@ -3,7 +3,10 @@ import os.path
 import numpy as np
 import math
 
-from Settings import Settings
+def getValue(temperature, target, target_delta):
+    if math.fabs(temperature - target) > target_delta:
+            return 0
+    return (target_delta - math.fabs(temperature - target)) / target_delta
 
 class Experience:
     def __init__(self, temperature, humidity, solenoid, timestamp, target, target_delta):
@@ -38,28 +41,22 @@ class Experiences:
         if len(self.experiences) == 0:
             return result
 
-        settings = Settings()
         experience0 = self.experiences[0]
         state1 = [0] * 2
-        target = settings.getTargetC()
-        target_delta = settings.getTargetDelta()
 
         for experience1 in self.experiences:
 
             # state
             state0 = state1
             del state1[0]
-            delta = math.floor((experience1.temperature - target) * 10)
+            delta = math.floor((experience1.temperature - experience1.target) * 10)
             state1.append(delta)
 
             # action
             action = 1 if experience1.solenoid else 0
 
             # value
-            if math.fabs(experience1.temperature - target) > target_delta:
-                    value = 0
-            else:
-                value = (target_delta - math.fabs(experience1.temperature - target)) / target_delta
+            value = getValue(experience1.temperature, experience1.target, experience1.target_delta)
 
             result.append(TrainingExperience(state0, state1, action, value))
 

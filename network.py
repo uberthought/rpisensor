@@ -54,7 +54,7 @@ class DQN:
         for experience in training_experiences:
             actions0 = self.run([experience.state0])
             actions1 = self.run([experience.state1])
-            discount_factor = .0
+            discount_factor = .5
             actions0[0][experience.action] = experience.value + discount_factor * np.max(actions1)
 
             X = np.concatenate((X, np.reshape(experience.state0, (1, self.state_size))), axis=0)

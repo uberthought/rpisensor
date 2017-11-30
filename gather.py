@@ -1,8 +1,8 @@
 #!/usr/bin/python3
 
-from Simulation import Simulation
-# from Sensor import Sensor
-# from Solenoid import Solenoid
+# from Simulation import Simulation
+from Sensor import Sensor
+from Solenoid import Solenoid
 from network import DQN
 from Experiences import Experiences
 from Settings import Settings
@@ -12,9 +12,9 @@ import numpy as np
 import random
 import math
 
-sensor = solenoid = simulation = Simulation.init()
-# sensor = Sensor()
-# solenoid = Solenoid()
+# sensor = solenoid = simulation = Simulation.init()
+sensor = Sensor()
+solenoid = Solenoid()
 experiences = Experiences()
 dqn = DQN(2, 2)
 
@@ -30,7 +30,7 @@ action = 0
 
 while True:
     
-    simulation.step()
+    # simulation.step()
 
     if Settings.getOn():
 
@@ -64,4 +64,4 @@ while True:
         temperature, humidity, timestamp = sensor.gather()
         print(temperature * 9 / 5 + 32)
 
-    # time.sleep(5)
+    time.sleep(5)

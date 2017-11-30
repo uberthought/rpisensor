@@ -1,6 +1,4 @@
 #!/bin/bash
 
 rm -rf train
-rm experiences.p
-rm settings.p
-rm simulation.p
+rm -f experiences.p settings.p simulation.p solenoid.p

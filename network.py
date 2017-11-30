@@ -44,17 +44,20 @@ class DQN:
         X = np.array([], dtype=np.float).reshape(0, self.state_input.shape[1])
         Y = np.array([], dtype=np.float).reshape(0, self.action_size)
 
-        # if (len(experiences.get()) > 100):
-        #     training_experiences = np.random.choice(experiences.get(), 100)
-        # else:
-        #     training_experiences = experiences.get()
+        training_data = experiences.get()
 
-        training_experiences = experiences.get()
+        if (len(experiences.get()) > 100):
+            training_experiences = np.random.choice(training_data, 50)
+            training_experiences = np.concatenate((training_experiences, training_data[-50:]), axis=0)
+        else:
+            training_experiences = training_data
+
+        # training_experiences = training_data
 
         for experience in training_experiences:
             actions0 = self.run([experience.state0])
             actions1 = self.run([experience.state1])
-            discount_factor = .5
+            discount_factor = .95
             actions0[0][experience.action] = experience.value + discount_factor * np.max(actions1)
 
             X = np.concatenate((X, np.reshape(experience.state0, (1, self.state_size))), axis=0)

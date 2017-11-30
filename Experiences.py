@@ -5,8 +5,8 @@ import math
 
 def getValue(temperature, target, target_delta):
     if math.fabs(temperature - target) > target_delta:
-            return 0
-    return (target_delta - math.fabs(temperature - target)) / target_delta
+            return -1
+    return 2 * (target_delta - math.fabs(temperature - target)) / target_delta - 1
 
 class Experience:
     def __init__(self, temperature, humidity, solenoid, timestamp, target, target_delta):

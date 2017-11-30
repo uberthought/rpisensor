@@ -13,7 +13,8 @@ class Simulation:
     def __init__(self):
         self.t = 0
         self.tdelta = 1
-        self.temperature = Settings.getTargetC() + (random.random() - 0.5) * 2
+        # self.temperature = Settings.getTargetC() + (random.random() - 0.5) * 2
+        self.temperature = Settings.getTargetC()
         self.humidity = 50
         self.on = False
 
@@ -26,7 +27,7 @@ class Simulation:
         self.t += self.tdelta
 
         if self.on:
-            self.temperature += 20 / 60
+            self.temperature += 10 / 60
 
         self.temperature -= (math.pow(self.temperature, 7) / math.pow(30, 7) * 20) / 60
 

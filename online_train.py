@@ -37,7 +37,7 @@ while True:
         experience = experiences.getLast()
         state = experience.state0
         actions = dqn.run([state])
-        if random.random() < 0.1:
+        if random.random() < 0.2:
             action = np.random.choice(2, 1)[0]
         else:
             action = np.argmax(actions)
@@ -55,7 +55,9 @@ while True:
         temperature, humidity, timestamp = sensor.gather()
         experiences.add(temperature, humidity, solenoid.isOn(), timestamp, target, target_delta)
 
-        loss = dqn.train(experiences)
+        start = time.time()
+        while(time.time() - start) < 5:
+            loss = dqn.train(experiences)
 
         target = Settings.getTargetC()
         target_delta = Settings.getTargetDelta()
@@ -67,4 +69,4 @@ while True:
         temperature, humidity, timestamp = sensor.gather()
         print(temperature * 9 / 5 + 32)
 
-    time.sleep(5)
+    # time.sleep(5)

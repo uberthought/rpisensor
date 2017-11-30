@@ -1,48 +1,64 @@
 #!/usr/bin/python3
 
-# import os.path
-import time
-# import datetime
-import numpy as np
-import math
-
+from Simulation import Simulation
 # from Sensor import Sensor
 # from Solenoid import Solenoid
-
 from network import DQN
-from Simulation import Simulation
+from Experiences import Experiences
+from Settings import Settings
 
+import time
+import numpy as np
+import random
+import math
+
+sensor = solenoid = simulation = Simulation.init()
 # sensor = Sensor()
 # solenoid = Solenoid()
-simulation = Simulation()
+experiences = Experiences()
 dqn = DQN(2, 2)
 
-delta, humidity, timestamp, value = simulation.step()
-state_list = [delta] * 2
-state0 = list(state_list)
-iterations = 0
+print('experiences ', len(experiences.get()))
 
-while simulation.temperature >= 24 and simulation.temperature <= 30:
-    iterations += 1
+target = Settings.getTargetC()
+target_delta = Settings.getTargetDelta()
+temperature, humidity, timestamp = sensor.gather()
+experiences.add(temperature, humidity, solenoid.on, timestamp, target, target_delta)
+experience = experiences.getLast()
+state = experience.state0
+action = 0
 
-    # delta, humidity, timestamp = sensor.gather()
+while True:
+    
+    simulation.step()
 
-    actions = dqn.run([state0])
-    action = np.argmax(actions)
+    if Settings.getOn():
 
-    if action == 0:
-        simulation.switchOff()
+        experience = experiences.getLast()
+        state = experience.state0
+        actions = dqn.run([state])
+        action = np.argmax(actions)
+
+        if temperature < target - target_delta:
+            action = 1
+        elif temperature > target + target_delta:
+            action = 0
+
+        if action == 0:
+            solenoid.switchOff()
+        else:
+            solenoid.switchOn()
+
+        temperature, humidity, timestamp = sensor.gather()
+        experiences.add(temperature, humidity, solenoid.isOn(), timestamp, target, target_delta)
+
+        target = Settings.getTargetC()
+        target_delta = Settings.getTargetDelta()
+
+        print(temperature * 9 / 5 + 32, state, action, 'actions', actions, 'value', experience.value)
+
     else:
-        simulation.switchOn()
+        temperature, humidity, timestamp = sensor.gather()
+        print(temperature * 9 / 5 + 32)
 
-    delta, humidity, timestamp, value = simulation.step()
-
-    del state_list[0]
-    state_list.append(delta)
-
-    state0 = list(state_list)
-
-    print(simulation.temperature, state0, action, 'actions', actions, 'value', value)
-
-    # time.sleep(5)
-print(iterations)
+    time.sleep(5)

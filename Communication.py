@@ -11,5 +11,3 @@ class Communication:
         if not os.path.isdir('train'):
             os.makedirs('train')
         subprocess.call(['scp', '-P 2222', 'root@35.202.235.6:DQN/train/*', 'train/'])
-
-Communication.getNetwork()

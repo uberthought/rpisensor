@@ -1,18 +1,20 @@
 #!/usr/bin/python3
 
-# from Simulation import Simulation
-from Sensor import Sensor
-from Solenoid import Solenoid
-from network import DQN
-from Experiences import Experiences
-from Settings import Settings
-
 import time
 import numpy as np
 import random
 import math
 
-# sensor = solenoid = simulation = Simulation.init()
+from threading import Thread
+
+from Sensor import Sensor
+from Solenoid import Solenoid
+from network import DQN
+from Experiences import Experiences
+from Settings import Settings
+from WebServer import WebServer
+from Communication import Communication
+
 sensor = Sensor()
 solenoid = Solenoid()
 experiences = Experiences()
@@ -28,9 +30,14 @@ experience = experiences.getLast()
 state = experience.state0
 action = 0
 
+thread = Thread(target=WebServer.run)
+thread.start()
+
+lastCopied = time.time()
+
 while True:
-    
-    # simulation.step()
+
+    runStart = time.time()
 
     if Settings.getOn():
 
@@ -64,4 +71,8 @@ while True:
         temperature, humidity, timestamp = sensor.gather()
         print(temperature * 9 / 5 + 32)
 
-    time.sleep(5)
+    time.sleep(5 - time.time() + runStart)
+
+    if (time.time() - lastCopied) > 60:
+        lastCopied = time.time()
+        Communication.sendExperiences()

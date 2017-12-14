@@ -1,9 +1,9 @@
 #!/usr/bin/python3
 
-# from Simulation import Simulation
-from Sensor import Sensor
-from Solenoid import Solenoid
-from network import DQN
+from Simulation import Simulation
+# from Sensor import Sensor
+# from Solenoid import Solenoid
+from network import Model
 from Experiences import Experiences
 from Settings import Settings
 
@@ -12,11 +12,11 @@ import numpy as np
 import random
 import math
 
-# sensor = solenoid = simulation = Simulation.init()
-sensor = Sensor()
-solenoid = Solenoid()
+sensor = solenoid = simulation = Simulation.init()
+# sensor = Sensor()
+# solenoid = Solenoid()
 experiences = Experiences()
-dqn = DQN(2, 2)
+model = Model(3, 2)
 
 print('experiences ', len(experiences.get()))
 
@@ -30,13 +30,13 @@ action = 0
 
 while True:
     
-    # simulation.step()
+    simulation.step()
 
     if Settings.getOn():
 
         experience = experiences.getLast()
         state = experience.state0
-        actions = dqn.run([state])
+        actions = model.dqn_run([state])
         if random.random() < 0.2:
             action = np.random.choice(2, 1)[0]
         else:
@@ -57,16 +57,17 @@ while True:
 
         start = time.time()
         while(time.time() - start) < 5:
-            loss = dqn.train(experiences)
+            model_loss = model.model_train(experiences)
+            dqn_loss = model.dqn_train(experiences)
 
         target = Settings.getTargetC()
         target_delta = Settings.getTargetDelta()
-        dqn.save()
+        model.save()
 
-        print(temperature * 9 / 5 + 32, state, action, 'actions', actions, 'value', experience.value, 'loss', loss)
+        print(temperature * 9 / 5 + 32, state, action, 'actions', actions, 'value', experience.value, 'model', model_loss, 'dqn', dqn_loss)
 
     else:
         temperature, humidity, timestamp = sensor.gather()
         print(temperature * 9 / 5 + 32)
 
-    time.sleep(5)
+    # time.sleep(5)

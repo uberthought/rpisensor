@@ -1,16 +1,15 @@
 #!/usr/bin/python3
 
-from network import DQN
+from network import Model
 from Experiences import Experiences
 
-dqn = DQN(2, 2)
+model = Model(3, 2)
 experiences = Experiences()
 
 print('experiences ', len(experiences.get()))
 
 for i in range(270):
-    loss = dqn.train(experiences)
-
-    print('loss', loss)
-
-    dqn.save()
+    model_loss = model.model_train(experiences)
+    dqn_loss = model.dqn_train(experiences)
+    print('model', model_loss, 'dqn', dqn_loss)
+    model.save()

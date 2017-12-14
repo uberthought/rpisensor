@@ -3,7 +3,7 @@
 from Simulation import Simulation
 # from Sensor import Sensor
 # from Solenoid import Solenoid
-from network import DQN
+from network import Model
 from Experiences import Experiences
 from Settings import Settings
 
@@ -16,7 +16,7 @@ sensor = solenoid = simulation = Simulation.init()
 # sensor = Sensor()
 # solenoid = Solenoid()
 experiences = Experiences()
-dqn = DQN(2, 2)
+model = Model(3, 2)
 
 print('experiences ', len(experiences.get()))
 
@@ -36,7 +36,7 @@ while True:
 
         experience = experiences.getLast()
         state = experience.state0
-        actions = dqn.run([state])
+        actions = model.dqn_run([state])
         action = np.argmax(actions)
 
         if temperature < target - target_delta:

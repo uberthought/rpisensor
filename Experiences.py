@@ -19,8 +19,8 @@ class Experience:
 
 class TrainingExperience:
     def __init__(self, state0, state1, action, value):
-        self.state0 = state0
-        self.state1 = state1
+        self.state0 = state0[:]
+        self.state1 = state1[:]
         self.action = action
         self.value = value
 
@@ -42,18 +42,19 @@ class Experiences:
             return result
 
         experience0 = self.experiences[0]
-        state1 = [0] * 2
+        state1 = [0] * 3
+        state1[0] = experience0.target
 
         for experience1 in self.experiences:
 
             # state
-            state0 = state1
-            del state1[0]
-            delta = math.floor((experience1.temperature - experience1.target) * 10)
-            state1.append(delta)
+            state0 = state1[:]
+            state1[0] = experience1.target
+            del state1[1]
+            state1.append(experience1.temperature - experience1.target)
 
             # action
-            action = 1 if experience1.solenoid else 0
+            action = [1 if experience1.solenoid else 0]
 
             # value
             value = getValue(experience1.temperature, experience1.target, experience1.target_delta)

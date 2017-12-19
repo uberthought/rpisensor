@@ -35,23 +35,30 @@ class Experiences:
         self.experiences.append(experience)
         pickle.dump(self.experiences, open("experiences.p", "wb"))
 
+    def add2(self, temperature, humidity, solenoid, timestamp, target, target_delta):
+        experience = Experience(temperature, humidity, solenoid, timestamp, target, target_delta)
+        self.experiences.append(experience)
+
     def get(self):
         result = []
 
-        if len(self.experiences) == 0:
+        if len(self.experiences) < 2:
             return result
 
         experience0 = self.experiences[0]
         state1 = [0] * 3
-        state1[0] = experience0.target
+
+        temperatures = [x.temperature for x in self.experiences]
+        max = np.max(temperatures)
+        min = np.min(temperatures)
+        state1[0] = (experience0.target - min) / (max - min)
 
         for experience1 in self.experiences:
 
             # state
             state0 = state1[:]
-            state1[0] = experience1.target
             del state1[1]
-            state1.append(experience1.temperature - experience1.target)
+            state1.append((experience1.temperature - experience1.target) / (max - min))
 
             # action
             action = [1 if experience1.solenoid else 0]

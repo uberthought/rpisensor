@@ -14,7 +14,6 @@ class Model:
         self.state_size = state_size
         self.action_size = action_size
 
-        self.keep_prob = tf.placeholder_with_default(1.0, [], name='keep_prob')
         self.stddev = tf.placeholder_with_default(0.0, [], name='stddev')
         self.states0 = tf.placeholder(tf.float32, shape=(None, self.state_size), name='states0')
         self.actions = tf.placeholder(tf.float32, shape=(None, 1), name='actions')
@@ -26,29 +25,23 @@ class Model:
         noise_vector1 = tf.random_normal(shape=tf.shape(self.states1), mean=0.0, stddev=self.stddev, dtype=tf.float32)
         noisy_states1 = tf.add(self.states1, noise_vector1)
 
-        units = 8
+        units = 16
 
-        value_hidden0 = tf.layers.dense(inputs=noisy_states1, units=units, activation=tf.nn.relu)
-        value_dropout0 = tf.nn.dropout(value_hidden0, self.keep_prob)
-        value_hidden1 = tf.layers.dense(inputs=value_dropout0, units=units, activation=tf.nn.relu)
-        value_dropout1 = tf.nn.dropout(value_hidden1, self.keep_prob)
-        self.value_prediction = tf.layers.dense(inputs=value_dropout1, units=1)
-        self.value_loss = tf.reduce_mean(tf.losses.mean_squared_error(self.values, self.value_prediction))
-        self.value_run_train = tf.train.AdagradOptimizer(.1).minimize(self.value_loss)
-
-        state_hidden0 = tf.concat([noisy_states0, self.actions], axis=1)
-        state_dropout0 = tf.nn.dropout(state_hidden0, self.keep_prob)
-        state_hidden1 = tf.layers.dense(inputs=state_dropout0, units=units, activation=tf.nn.relu)
-        state_dropout1 = tf.nn.dropout(state_hidden1, self.keep_prob)
-        self.state_prediction = tf.layers.dense(inputs=state_dropout1, units=self.state_size)
-        self.state_loss = tf.reduce_mean(tf.losses.mean_squared_error(self.states1, self.state_prediction))
-        self.state_run_train = tf.train.AdagradOptimizer(.1).minimize(self.state_loss)
+        model_input = tf.concat([noisy_states0, self.actions], axis=1)
+        model_hidden0 = tf.layers.dense(inputs=model_input, units=units, activation=tf.nn.relu)
+        model_hidden1 = tf.layers.dense(inputs=model_hidden0, units=units, activation=tf.nn.relu)
+        # model_hidden2 = tf.layers.dense(inputs=model_hidden1, units=units, activation=tf.nn.relu)
+        # model_hidden3 = tf.layers.dense(inputs=model_hidden3, units=units, activation=tf.nn.relu)
+        self.model_prediction = tf.layers.dense(inputs=model_hidden1, units=self.state_size + 1)
+        model_expected = tf.concat([self.states1, self.values], axis=1)
+        self.model_loss = tf.reduce_mean(tf.losses.mean_squared_error(model_expected, self.model_prediction))
+        self.model_run_train = tf.train.AdagradOptimizer(.1).minimize(self.model_loss)
+        self.model_prediction_states1 = tf.slice(self.model_prediction, [0, 0], [-1, self.state_size])
+        self.model_prediction_values = tf.slice(self.model_prediction, [0, self.state_size], [-1, 1])
 
         dqn_hidden0 = tf.layers.dense(inputs=noisy_states0, units=units, activation=tf.nn.relu)
-        dqn_dropout0 = tf.nn.dropout(dqn_hidden0, self.keep_prob)
-        dqn_hidden1 = tf.layers.dense(inputs=dqn_dropout0, units=units, activation=tf.nn.relu)
-        dqn_dropout1 = tf.nn.dropout(dqn_hidden1, self.keep_prob)
-        self.dqn_prediction = tf.layers.dense(inputs=dqn_dropout1, units=self.action_size)
+        dqn_hidden1 = tf.layers.dense(inputs=dqn_hidden0, units=units, activation=tf.nn.relu)
+        self.dqn_prediction = tf.layers.dense(inputs=dqn_hidden1, units=self.action_size)
         self.dqn_expected = tf.placeholder(tf.float32, shape=(None, self.action_size))
         self.dqn_loss = tf.reduce_mean(tf.losses.mean_squared_error(self.dqn_expected, self.dqn_prediction))
         self.dqn_run_train = tf.train.AdagradOptimizer(.1).minimize(self.dqn_loss)
@@ -65,53 +58,19 @@ class Model:
         saver = tf.train.Saver()
         saver.save(self.sess, 'graph/graph')
 
-    def state_run(self, states, actions):
-        return self.sess.run(self.state_prediction, feed_dict={self.states0: states, self.actions: actions})
-
-    def value_run(self, states):
-        return self.sess.run(self.value_prediction, feed_dict={self.states1: states})
+    def model_run(self, states, actions):
+        return self.sess.run([self.model_prediction_states1, self.model_prediction_values], feed_dict={self.states0: states, self.actions: actions})
 
     def dqn_run(self, states):
         return self.sess.run(self.dqn_prediction, feed_dict={self.states0: states})
 
-    def value_train(self, experiences, offline):
+    def model_train(self, experiences, offline):
         states0 = np.array([], dtype=np.float).reshape(0, self.state_size)
         actions = np.array([], dtype=np.float).reshape(0, 1)
         states1 = np.array([], dtype=np.float).reshape(0, self.state_size)
         values = np.array([], dtype=np.float).reshape(0, 1)
 
-        training_count = 10
-        training_data = experiences.get()
-        if len(training_data) > training_count:
-            if offline:
-                training_experiences = np.random.choice(training_data, training_count)
-            else:
-                training_experiences = np.random.choice(training_data, training_count/2)
-                training_experiences = np.concatenate((training_experiences, training_data[-training_count/2:]), axis=0)
-        else:
-            training_experiences = training_data
-
-        for experience in training_experiences:
-            state1 = experience.state0
-            value = experience.value
-
-            states1 = np.concatenate((states1, np.reshape(state1, (1, self.state_size))), axis=0)
-            values = np.concatenate((values, np.reshape(value, (1, 1))), axis=0)
-
-        feed_dict = {self.states1: states1, self.values: values, self.keep_prob: 0.99, self.stddev: 0.01}
-        loss = math.inf
-        i = 0
-        while loss > .001 and i < 1000:
-            i += 1
-            loss, _ = self.sess.run([self.value_loss, self.value_run_train], feed_dict=feed_dict)
-        return loss
-
-    def state_train(self, experiences, offline):
-        states0 = np.array([], dtype=np.float).reshape(0, self.state_size)
-        actions = np.array([], dtype=np.float).reshape(0, 1)
-        states1 = np.array([], dtype=np.float).reshape(0, self.state_size)
-
-        training_count = 10
+        training_count = 1000
         training_data = experiences.get()
         if len(training_data) > training_count:
             if offline:
@@ -126,17 +85,19 @@ class Model:
             state0 = experience.state0
             action = experience.action
             state1 = experience.state1
+            value = experience.value
 
             states0 = np.concatenate((states0, np.reshape(state0, (1, self.state_size))), axis=0)
             actions = np.concatenate((actions, np.reshape(action, (1, 1))), axis=0)
             states1 = np.concatenate((states1, np.reshape(state1, (1, self.state_size))), axis=0)
+            values = np.concatenate((values, np.reshape(value, (1, 1))), axis=0)
 
-        feed_dict = {self.states0: states0, self.actions: actions, self.states1: states1, self.keep_prob: 0.99, self.stddev: 0.01}
+        feed_dict = {self.states0: states0, self.actions: actions, self.states1: states1, self.values: values, self.stddev: 0.01}
         loss = math.inf
         i = 0
-        while loss > .001 and i < 1000:
+        while loss > .0001 and i < 1000:
             i += 1;
-            loss, _ = self.sess.run([self.state_loss, self.state_run_train], feed_dict=feed_dict)
+            loss, _ = self.sess.run([self.model_loss, self.model_run_train], feed_dict=feed_dict)
         return loss
 
     def dqn_train(self, experiences, offline):
@@ -149,8 +110,9 @@ class Model:
             if offline:
                 training_experiences = np.random.choice(training_data, training_count)
             else:
-                training_experiences = np.random.choice(training_data, training_count/2)
-                training_experiences = np.concatenate((training_experiences, training_data[-training_count/2:]), axis=0)
+                half = (int)(training_count/2)
+                training_experiences = np.random.choice(training_data, half)
+                training_experiences = np.concatenate((training_experiences, training_data[-half:]), axis=0)
         else:
             training_experiences = training_data
 
@@ -158,26 +120,25 @@ class Model:
             state0 = experience.state0
             action = experience.action
 
-            for i in range(10):
+            for i in range(50):
                 states0 = [state0] * self.action_size
                 actions = np.arange(self.action_size).reshape((self.action_size, 1))
-                states1 = self.state_run(states0, actions)
-                values = self.value_run(states1)
+                states1, values = self.model_run(states0, actions)
 
                 actions0 = self.dqn_run([state0])
                 actions1 = self.dqn_run(states1)
                 action = [np.argmax(actions0)]
-                discount_factor = .99
+                discount_factor = .5
                 actions0[0] = [values[x] + discount_factor * np.max(actions1[x]) for x in range(self.action_size)]
 
                 X = np.concatenate((X, np.reshape(state0, (1, self.state_size))), axis=0)
                 Y = np.concatenate((Y, actions0), axis=0)
                 state0 = states1[action][0]
 
-        feed_dict = {self.states0: X, self.dqn_expected: Y, self.keep_prob: 0.99, self.stddev: 0.01}
+        feed_dict = {self.states0: X, self.dqn_expected: Y, self.stddev: 0.01}
         loss = math.inf
         i = 0
-        while loss > .001 and i < 1000:
+        while loss > .0000001 and i < 1000:
             i += 1;
             loss, _ = self.sess.run([self.dqn_loss, self.dqn_run_train], feed_dict=feed_dict)
         return loss

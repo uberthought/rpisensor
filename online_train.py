@@ -37,7 +37,7 @@ while True:
         experience = experiences.getLast()
         state = experience.state0
         actions = model.dqn_run([state])
-        if random.random() < 0.9:
+        if random.random() < 0.2:
             action = np.random.choice(2, 1)[0]
         else:
             action = np.argmax(actions)

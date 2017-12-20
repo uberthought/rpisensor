@@ -9,6 +9,9 @@ def getValue(temperature, target, target_delta):
     return 2 * (target_delta - math.fabs(temperature - target)) / target_delta - 1
 
 class Experience:
+    minTemperature = 15
+    maxTemperature = 33
+
     def __init__(self, temperature, humidity, solenoid, timestamp, target, target_delta):
         self.temperature = temperature
         self.humidity = humidity
@@ -48,9 +51,9 @@ class Experiences:
         experience0 = self.experiences[0]
         state1 = [0] * 3
 
-        temperatures = [x.temperature for x in self.experiences]
-        max = np.max(temperatures)
-        min = np.min(temperatures)
+        min = Experience.minTemperature
+        max = Experience.maxTemperature
+
         state1[0] = (experience0.target - min) / (max - min)
 
         for experience1 in self.experiences:

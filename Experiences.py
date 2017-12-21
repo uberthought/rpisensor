@@ -5,8 +5,8 @@ import math
 
 def getValue(temperature, target, target_delta):
     if math.fabs(temperature - target) > target_delta:
-            return -1
-    return 2 * (target_delta - math.fabs(temperature - target)) / target_delta - 1
+            return 0
+    return 2 * (target_delta - math.fabs(temperature - target)) / target_delta
 
 class Experience:
     minTemperature = 15
@@ -75,4 +75,6 @@ class Experiences:
 
     def getLast(self):
         foo = self.get()
-        return foo[-1]
+        if any(foo):
+            return foo[-1]
+        return []

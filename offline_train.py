@@ -8,9 +8,9 @@ experiences = Experiences()
 
 print('experiences ', len(experiences.get()))
 
-for i in range(1):
-    model_loss = model.model_train(experiences, True)
+for i in range(20):
+    model_loss = model.model_train(experiences)
     print('model', model_loss)
-    # dqn_loss = model.dqn_train(experiences, True)
-    # print('dqn', dqn_loss)
+    dqn_loss = model.dqn_train(experiences)
+    print('dqn', dqn_loss)
     model.save()

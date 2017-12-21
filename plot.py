@@ -20,42 +20,40 @@ max = experiences.experiences[-1].target + experiences.experiences[-1].target_de
 target = experiences.experiences[-1].target
 target_delta = experiences.experiences[-1].target_delta
 
-experiences2 = Experiences()
-experiences2.experiences = []
-for temperature in np.arange(min, max, .005):
-    experiences2.add2(temperature, .5, False, 0, target, target_delta)
+experiencesFake = Experiences()
+experiencesFake.experiences = []
+for temperature in np.arange(min, max, .01):
+        experiencesFake.add2(temperature, .5, False, 0, target, target_delta)
+        experiencesFake.add2(temperature, .5, True, 0, target, target_delta)
 
-# foo2 = experiences.get()
-foo2 = experiences2.get()
-actualValues2 = []
-predictedValues2 = []
-actions2 = []
-temperatures2 = []
-for experience in foo2:
-    states1, values = model.model_run([experience.state1], [[experience.value]])
+fooFake = experiencesFake.get()[2:]
+# fooFake = experiences.get()
+valuesOn = []
+valuesOff = []
+temperaturesOn = []
+temperaturesOff = []
+i = 0
+for experience in fooFake:
+    _, values = model.model_run([experience.state0], [experience.action])
 
-    actions = model.dqn_run([experience.state0])
-    action = actions[0]
-    action = np.append(action, np.argmax(actions))
-
-    temperatures2.append(experience.state1[2])
-    predictedValues2.append(values[0][0])
-    actualValues2.append(experience.value)
-    actions2.append(action)
-
-temperatures2 = temperatures2[2:]
-actualValues2 = actualValues2[2:]
-predictedValues2 = predictedValues2[2:]
-actions2 = actions2[2:]
-
-# actions2 = actions2 / np.max(actions2, axis=0)
+    if experience.action[0] == 0:
+        valuesOff.append(values[0][0])
+        # valuesOff.append(experience.value - values[0][0])
+        # valuesOff.append(experience.value)
+        temperaturesOff.append(experience.state0[2])
+    else:
+        valuesOn.append(values[0][0])
+        # valuesOn.append(experience.value - values[0][0])
+        # valuesOn.append(experience.value)
+        temperaturesOn.append(experience.state0[2])
+    
+    if experience.value == -1:
+        print(i, experience.state0)
+    i += 1
 
 fig, ax = plt.subplots()
-ax.plot(temperatures2, [x[0] for x in actions2], label='off')
-ax.plot(temperatures2, [x[1] for x in actions2], label='on')
-ax.plot(temperatures2, [x[2] for x in actions2], label='trigger')
-ax.plot(temperatures2, actualValues2, label='actual value')
-ax.plot(temperatures2, predictedValues2, label='predicted value')
+ax.plot(temperaturesOn, valuesOn, 'o', label='on')
+ax.plot(temperaturesOff, valuesOff, 'o', label='off')
 
 legend = ax.legend(loc='lower right')
 for label in legend.get_lines():

@@ -19,13 +19,13 @@ class Model:
         self.states1 = tf.placeholder(tf.float32, shape=(None, self.state_size), name='states1')
         self.values = tf.placeholder(tf.float32, shape=(None, 1), name='values')
 
-        units = 8
+        units = 16
 
         model_input = tf.concat([self.states0, self.actions], axis=1)
         model_hidden0 = tf.layers.dense(inputs=model_input, units=units, activation=tf.nn.relu)
         model_hidden1 = tf.layers.dense(inputs=model_hidden0, units=units, activation=tf.nn.relu)
-        # model_hidden2 = tf.layers.dense(inputs=model_hidden0, units=units, activation=tf.nn.relu)
-        self.model_prediction = tf.layers.dense(inputs=model_hidden1, units=self.state_size + 1)
+        model_hidden2 = tf.layers.dense(inputs=model_hidden0, units=units, activation=tf.nn.relu)
+        self.model_prediction = tf.layers.dense(inputs=model_hidden2, units=self.state_size + 1)
         model_expected = tf.concat([self.states1, self.values], axis=1)
         self.model_loss = tf.reduce_mean(tf.losses.mean_squared_error(model_expected, self.model_prediction))
         self.model_run_train = tf.train.AdagradOptimizer(.1).minimize(self.model_loss)
@@ -34,8 +34,8 @@ class Model:
 
         dqn_hidden0 = tf.layers.dense(inputs=self.states0, units=units, activation=tf.nn.relu)
         dqn_hidden1 = tf.layers.dense(inputs=dqn_hidden0, units=units, activation=tf.nn.relu)
-        # dqn_hidden2 = tf.layers.dense(inputs=dqn_hidden1, units=units, activation=tf.nn.relu)
-        self.dqn_prediction = tf.layers.dense(inputs=dqn_hidden1, units=self.action_size)
+        dqn_hidden2 = tf.layers.dense(inputs=dqn_hidden1, units=units, activation=tf.nn.relu)
+        self.dqn_prediction = tf.layers.dense(inputs=dqn_hidden2, units=self.action_size)
         self.dqn_expected = tf.placeholder(tf.float32, shape=(None, self.action_size))
         self.dqn_loss = tf.reduce_mean(tf.losses.mean_squared_error(self.dqn_expected, self.dqn_prediction))
         self.dqn_run_train = tf.train.AdagradOptimizer(.1).minimize(self.dqn_loss)
@@ -64,7 +64,7 @@ class Model:
         states1 = np.array([], dtype=np.float).reshape(0, self.state_size)
         values = np.array([], dtype=np.float).reshape(0, 1)
 
-        training_count = 1000
+        training_count = 100
         training_data = experiences.get()
         if len(training_data) > training_count:
             training_experiences = np.random.choice(training_data, training_count)
@@ -91,12 +91,12 @@ class Model:
         return loss
 
     def dqn_train(self, experiences):
-        discount_factor = .1
+        discount_factor = 1
 
         X = np.array([], dtype=np.float).reshape(0, self.states0.shape[1])
         Y = np.array([], dtype=np.float).reshape(0, self.action_size)
 
-        training_count = 10
+        training_count = 100
         training_data = experiences.get()
         if len(training_data) > training_count:
             training_experiences = np.random.choice(training_data, training_count)
@@ -109,25 +109,24 @@ class Model:
             action = experience.action
             value = experience.value
 
-            actions0 = self.dqn_run([state0])
-            actions1 = self.dqn_run([state1])
+            [actions0, actions1] = self.dqn_run([state0, state1])
             action = np.argmax(actions0)
-            actions0[0][action] = value + discount_factor * np.max(actions1)
+            actions0[action] = value + discount_factor * np.max(actions1)
             X = np.concatenate((X, np.reshape(state0, (1, self.state_size))), axis=0)
-            Y = np.concatenate((Y, actions0), axis=0)
+            Y = np.concatenate((Y, np.reshape(actions0, (1, self.action_size))), axis=0)
 
-            for i in range(20):
+            for i in range(10):
                 states0 = [state0] * self.action_size
                 actions = np.arange(self.action_size).reshape((self.action_size, 1))
                 states1, values = self.model_run(states0, actions)
 
-                actions0 = self.dqn_run([state0])
+                actions0 = self.dqn_run(states0)
                 actions1 = self.dqn_run(states1)
                 action = [np.argmax(actions0)]
-                actions0[0] = [values[x] + discount_factor * np.max(actions1[x]) for x in range(self.action_size)]
+                actions0 = [sigmoid(values[x] + discount_factor * np.max(actions1[x])) for x in range(self.action_size)]
 
                 X = np.concatenate((X, np.reshape(state0, (1, self.state_size))), axis=0)
-                Y = np.concatenate((Y, actions0), axis=0)
+                Y = np.concatenate((Y, np.reshape(actions0, (1, self.action_size))), axis=0)
                 state0 = states1[action][0]
 
         feed_dict = {self.states0: X, self.dqn_expected: Y}

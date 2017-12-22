@@ -28,36 +28,18 @@ for temperature in np.arange(min, max, .01):
 
 fooFake = experiencesFake.get()[2:]
 # fooFake = experiences.get()
-valuesOn = []
-valuesOff = []
-valuesHalf = []
-temperaturesOn = []
-temperaturesOff = []
-temperaturesHalf = []
-i = 0
+temperatures2 = []
+actions2 = []
 for experience in fooFake:
-    _, values = model.model_run([experience.state0], [experience.action])
 
-    if experience.action[0] == 0:
-        valuesOff.append(values[0][0])
-        # valuesOff.append(experience.value - values[0][0])
-        # valuesOff.append(experience.value)
-        temperaturesOff.append(experience.state0[2])
-    else:
-        valuesOn.append(values[0][0])
-        # valuesOn.append(experience.value - values[0][0])
-        # valuesOn.append(experience.value)
-        temperaturesOn.append(experience.state0[2])
+    actions = model.dqn_run([experience.state0])[0]
 
-    # _, values = model.model_run([experience.state0], [[0.5]])
-    # valuesHalf.append(values[0][0])
-    # temperaturesHalf.append(experience.state0[2])
-
+    temperatures2.append(experience.state1[2])
+    actions2.append(actions)
 
 fig, ax = plt.subplots(figsize=(20, 10))
-ax.plot(temperaturesOn, valuesOn, 'o', label='on')
-ax.plot(temperaturesOff, valuesOff, 'o', label='off')
-# ax.plot(temperaturesHalf, valuesHalf, 'o', label='half')
+ax.plot(temperatures2, [x[0] for x in actions2], label='off')
+ax.plot(temperatures2, [x[1] for x in actions2], label='on')
 
 legend = ax.legend(loc='lower right')
 for label in legend.get_lines():

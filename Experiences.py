@@ -3,9 +3,6 @@ import os.path
 import numpy as np
 import math
 
-def getValue(temperature, target, target_delta):
-    return (target_delta - math.fabs(temperature - target)) / target_delta
-
 class Experience:
     minTemperature = 15
     maxTemperature = 33
@@ -17,6 +14,11 @@ class Experience:
         self.timestamp = timestamp
         self.target = target
         self.target_delta = target_delta
+
+    def getValue(temperature, target, target_delta):
+        result = (target_delta - math.fabs(temperature - target)) / target_delta
+        result = result * 9
+        return result
 
 class TrainingExperience:
     def __init__(self, state0, state1, action, value):
@@ -54,7 +56,7 @@ class Experiences:
 
         state1[0] = (experience0.target - min) / (max - min)
 
-        value1 = getValue(experience0.temperature, experience0.target, experience0.target_delta)
+        value1 = Experience.getValue(experience0.temperature, experience0.target, experience0.target_delta)
 
         for experience1 in self.experiences:
 
@@ -68,10 +70,11 @@ class Experiences:
 
             # value
             value0 = value1
-            value1 = getValue(experience1.temperature, experience1.target, experience1.target_delta)
+            value1 = Experience.getValue(experience1.temperature, experience1.target, experience1.target_delta)
             value = value1 - value0
 
-            result.append(TrainingExperience(state0, state1, action, value))
+            if value != 0:
+                result.append(TrainingExperience(state0, state1, action, value))
 
         return result
 
@@ -79,4 +82,4 @@ class Experiences:
         foo = self.get()
         if any(foo):
             return foo[-1]
-        return []
+        return TrainingExperience([], [], 0, 0)

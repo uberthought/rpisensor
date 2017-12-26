@@ -12,7 +12,7 @@ class Simulation:
     
     def __init__(self):
         self.t = 0
-        self.tdelta = 1
+        self.tdelta = 2
         # self.temperature = Settings.getTargetC() + (random.random() - 0.5) * 2
         self.temperature = Settings.getTargetC()
         self.humidity = 50

@@ -4,13 +4,18 @@ import numpy as np
 import math
 
 def getValue(temperature, target, target_delta):
-    if math.fabs(temperature - target) > target_delta:
-            return 0
-    return (target_delta - math.fabs(temperature - target)) / target_delta
+    result = (target_delta - math.fabs(temperature - target)) / target_delta
+    # result = result - 1
+    # result = math.fabs(result)
+    # result = result ** .5
+    # result = 1 - result * 2
+    # print(temperature, result)
+    return result
+
 
 class Experience:
-    minTemperature = 15
-    maxTemperature = 33
+    minTemperature = 23
+    maxTemperature = 25
 
     def __init__(self, temperature, humidity, solenoid, timestamp, target, target_delta):
         self.temperature = temperature
@@ -49,19 +54,20 @@ class Experiences:
             return result
 
         experience0 = self.experiences[0]
-        state1 = [0] * 3
+        state1 = [0] * 2
 
         min = Experience.minTemperature
         max = Experience.maxTemperature
 
-        state1[0] = (experience0.target - min) / (max - min)
+        # state1[0] = (experience0.target - min) / (max - min)
 
         for experience1 in self.experiences:
 
             # state
             state0 = state1[:]
-            del state1[1]
-            state1.append((experience1.temperature - experience1.target) / (max - min))
+            del state1[0]
+            foo = (experience1.temperature - experience1.target) / (max - min)
+            state1.append(foo)
 
             # action
             action = [1 if experience1.solenoid else 0]

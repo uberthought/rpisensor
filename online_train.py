@@ -16,7 +16,7 @@ sensor = solenoid = simulation = Simulation.init()
 # sensor = Sensor()
 # solenoid = Solenoid()
 experiences = Experiences()
-model = Model(3, 2)
+model = Model(2, 2)
 
 print('experiences ', len(experiences.get()))
 
@@ -40,8 +40,8 @@ while True:
         actions = model.dqn_run([state])
         action = np.argmax(actions)
         if random.random() < 0.5:
-            # action = abs(action - 1)
-            action = np.random.choice(2, 1)[0]
+            action = abs(action - 1)
+            # action = np.random.choice(2, 1)[0]
 
         force = False
         if temperature < target - target_delta:

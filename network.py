@@ -19,7 +19,7 @@ class Model:
         self.states1 = tf.placeholder(tf.float32, shape=(None, self.state_size), name='states1')
         self.values = tf.placeholder(tf.float32, shape=(None, 1), name='values')
 
-        units = 4
+        units = 32
 
         model_input = tf.concat([self.states0, self.actions], axis=1)
         model_hidden0 = tf.layers.dense(inputs=model_input, units=units, activation=tf.nn.relu)
@@ -64,7 +64,7 @@ class Model:
         states1 = np.array([], dtype=np.float).reshape(0, self.state_size)
         values = np.array([], dtype=np.float).reshape(0, 1)
 
-        training_count = 10000
+        training_count = 100
         training_data = experiences.get()
         if len(training_data) > training_count:
             training_experiences = np.random.choice(training_data, training_count)
@@ -91,7 +91,7 @@ class Model:
         return loss
 
     def dqn_train(self, experiences):
-        discount_factor = 1
+        discount_factor = 0.5
 
         X = np.array([], dtype=np.float).reshape(0, self.states0.shape[1])
         Y = np.array([], dtype=np.float).reshape(0, self.action_size)
@@ -123,7 +123,7 @@ class Model:
                 actions0 = self.dqn_run(states0)
                 actions1 = self.dqn_run(states1)
                 action = [np.argmax(actions0)]
-                actions0 = [sigmoid(values[x] + discount_factor * np.max(actions1[x])) for x in range(self.action_size)]
+                actions0 = [values[x] + discount_factor * np.max(actions1[x]) for x in range(self.action_size)]
 
                 X = np.concatenate((X, np.reshape(state0, (1, self.state_size))), axis=0)
                 Y = np.concatenate((Y, np.reshape(actions0, (1, self.action_size))), axis=0)

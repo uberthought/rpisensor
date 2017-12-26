@@ -4,8 +4,6 @@ import numpy as np
 import math
 
 def getValue(temperature, target, target_delta):
-    if math.fabs(temperature - target) > target_delta:
-            return 0
     return (target_delta - math.fabs(temperature - target)) / target_delta
 
 class Experience:
@@ -56,6 +54,8 @@ class Experiences:
 
         state1[0] = (experience0.target - min) / (max - min)
 
+        value1 = getValue(experience0.temperature, experience0.target, experience0.target_delta)
+
         for experience1 in self.experiences:
 
             # state
@@ -67,7 +67,9 @@ class Experiences:
             action = [1 if experience1.solenoid else 0]
 
             # value
-            value = getValue(experience1.temperature, experience1.target, experience1.target_delta)
+            value0 = value1
+            value1 = getValue(experience1.temperature, experience1.target, experience1.target_delta)
+            value = value1 - value0
 
             result.append(TrainingExperience(state0, state1, action, value))
 

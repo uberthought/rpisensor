@@ -25,16 +25,13 @@ temperature, humidity, timestamp = sensor.gather()
 experiences.add(temperature, humidity, solenoid.on, timestamp, target, target_delta)
 experiences.add(temperature, humidity, solenoid.on, timestamp, target, target_delta)
 experience = experiences.getLast()
-state = experience.state0
 action = 0
 
-while True:
+for i in range(100):
     
-    simulation.step()
-
     experience = experiences.getLast()
     state = experience.state0
-    if random.random() < 0.6:
+    if random.random() < 0.57:
         action = 0
     else:
         action = 1
@@ -52,6 +49,8 @@ while True:
     else:
         solenoid.switchOn()
 
+    simulation.step()
+
     temperature, humidity, timestamp = sensor.gather()
     if not force:
         experiences.add(temperature, humidity, solenoid.isOn(), timestamp, target, target_delta)
@@ -59,5 +58,6 @@ while True:
     target = Settings.getTargetC()
     target_delta = Settings.getTargetDelta()
 
-    print(temperature * 9 / 5 + 32, state, action, experience.value)
+    if i % 100 == 0:
+        print(temperature * 9 / 5 + 32, state, action, experience.value)
     

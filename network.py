@@ -19,13 +19,13 @@ class Model:
         self.states1 = tf.placeholder(tf.float32, shape=(None, self.state_size), name='states1')
         self.values = tf.placeholder(tf.float32, shape=(None, 1), name='values')
 
-        units = 16
+        units = 4
 
         model_input = tf.concat([self.states0, self.actions], axis=1)
         model_hidden0 = tf.layers.dense(inputs=model_input, units=units, activation=tf.nn.relu)
-        model_hidden1 = tf.layers.dense(inputs=model_hidden0, units=units, activation=tf.nn.relu)
-        model_hidden2 = tf.layers.dense(inputs=model_hidden0, units=units, activation=tf.nn.relu)
-        self.model_prediction = tf.layers.dense(inputs=model_hidden2, units=self.state_size + 1)
+        # model_hidden1 = tf.layers.dense(inputs=model_hidden0, units=units, activation=tf.nn.relu)
+        # model_hidden2 = tf.layers.dense(inputs=model_hidden0, units=units, activation=tf.nn.relu)
+        self.model_prediction = tf.layers.dense(inputs=model_hidden0, units=self.state_size + 1)
         model_expected = tf.concat([self.states1, self.values], axis=1)
         self.model_loss = tf.reduce_mean(tf.losses.mean_squared_error(model_expected, self.model_prediction))
         self.model_run_train = tf.train.AdagradOptimizer(.1).minimize(self.model_loss)
@@ -64,7 +64,7 @@ class Model:
         states1 = np.array([], dtype=np.float).reshape(0, self.state_size)
         values = np.array([], dtype=np.float).reshape(0, 1)
 
-        training_count = 100
+        training_count = 10000
         training_data = experiences.get()
         if len(training_data) > training_count:
             training_experiences = np.random.choice(training_data, training_count)

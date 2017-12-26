@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 
-# import matplotlib
-# matplotlib.use('Agg')
+import matplotlib
+matplotlib.use('Agg')
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -55,8 +55,9 @@ for experience in fooFake:
 
 
 fig, ax = plt.subplots(figsize=(20, 10))
-ax.plot(temperaturesOn, valuesOn, 'o', label='on')
-ax.plot(temperaturesOff, valuesOff, 'o', label='off')
+# fig, ax = plt.subplots()
+ax.plot(temperaturesOn, valuesOn, '.', label='on')
+ax.plot(temperaturesOff, valuesOff, '.', label='off')
 # ax.plot(temperaturesHalf, valuesHalf, 'o', label='half')
 
 legend = ax.legend(loc='lower right')

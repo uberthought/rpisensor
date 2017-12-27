@@ -23,6 +23,7 @@ max = experiences.experiences[-1].target + experiences.experiences[-1].target_de
 target = experiences.experiences[-1].target
 target_delta = experiences.experiences[-1].target_delta
 
+
 experiencesFake = Experiences()
 experiencesFake.experiences = []
 for temperature in np.arange(min, max, .01):
@@ -94,8 +95,6 @@ ax.plot(temperatures, predictedOff, label='predicted off', color='blue')
 # ax.plot(temperatures, diffOff, label='diff off', color='blue')
 
 legend = ax.legend(loc='lower right')
-for label in legend.get_lines():
-    label.set_linewidth(2)
 for label in legend.get_texts():
     label.set_fontsize('large')
 

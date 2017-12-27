@@ -26,7 +26,6 @@ experiencesFake = Experiences()
 experiencesFake.experiences = []
 for temperature in np.arange(min, max, .01):
         experiencesFake.add2(temperature, .5, False, 0, target, target_delta)
-        experiencesFake.add2(temperature, .5, True, 0, target, target_delta)
 
 fooFake = experiencesFake.get()[2:]
 temperatures = []
@@ -41,8 +40,8 @@ for experience in fooFake:
     diff.append(actions[1] - actions[0])
 
 fig, ax = plt.subplots(figsize=(20, 10))
-# ax.plot(temperatures, [x[0] for x in actions2], label='off', color='blue')
-# ax.plot(temperatures, [x[1] for x in actions2], label='on', color='red')
+ax.plot(temperatures, [x[0] for x in actions2], label='off', color='blue')
+ax.plot(temperatures, [x[1] for x in actions2], label='on', color='red')
 # ax.plot(temperatures, triggers, label='trigger', color='gray')
 ax.plot(temperatures, diff, label='on vs. off', color='gray')
 

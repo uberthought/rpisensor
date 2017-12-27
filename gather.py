@@ -27,10 +27,17 @@ experiences.add(temperature, humidity, solenoid.on, timestamp, target, target_de
 experience = experiences.getLast()
 action = 0
 
+<<<<<<< HEAD
 for i in range(100):
     
     experience = experiences.getLast()
     state = experience.state0
+=======
+for i in range(2000):
+    
+    simulation.step()
+
+>>>>>>> split_model
     if random.random() < 0.57:
         action = 0
     else:
@@ -49,6 +56,7 @@ for i in range(100):
     else:
         solenoid.switchOn()
 
+<<<<<<< HEAD
     simulation.step()
 
     temperature, humidity, timestamp = sensor.gather()
@@ -61,3 +69,12 @@ for i in range(100):
     if i % 100 == 0:
         print(temperature * 9 / 5 + 32, state, action, experience.value)
     
+=======
+    temperature, humidity, timestamp = sensor.gather()
+    if not force:
+        experiences.add(temperature, humidity, solenoid.isOn(), timestamp, target, target_delta)
+
+    experience = experiences.getLast()
+    if i % 100 == 0:
+        print(temperature * 9 / 5 + 32, experience.state0, action, 'value', experience.value)
+>>>>>>> split_model

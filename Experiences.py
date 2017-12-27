@@ -4,8 +4,8 @@ import numpy as np
 import math
 
 class Experience:
-    minTemperature = 15
-    maxTemperature = 33
+    minTemperature = 23
+    maxTemperature = 25
 
     def __init__(self, temperature, humidity, solenoid, timestamp, target, target_delta):
         self.temperature = temperature
@@ -62,8 +62,9 @@ class Experiences:
 
             # state
             state0 = state1[:]
-            del state1[1]
-            state1.append((experience1.temperature - experience1.target) / (max - min))
+            del state1[0]
+            foo = (experience1.temperature - experience1.target) / (max - min)
+            state1.append(foo)
 
             # action
             action = [1 if experience1.solenoid else 0]

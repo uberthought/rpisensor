@@ -19,22 +19,37 @@ class Model:
         self.states1 = tf.placeholder(tf.float32, shape=(None, self.state_size), name='states1')
         self.values = tf.placeholder(tf.float32, shape=(None, 1), name='values')
 
-        units = 32
+        self.stddev = tf.placeholder_with_default(0.0, [])
+        self.keep_prob = tf.placeholder_with_default(1.0, [])
+
+
+        units = 4
+
+        # noise_vector = tf.random_normal(shape=tf.shape(self.input_layer), mean=0.0, stddev=self.stddev, dtype=tf.float32)
+        # self.noise = tf.add(self.input_layer, noise_vector)
 
         model_input = tf.concat([self.states0, self.actions], axis=1)
-        model_hidden0 = tf.layers.dense(inputs=model_input, units=units, activation=tf.nn.relu)
-        model_hidden1 = tf.layers.dense(inputs=model_hidden0, units=units, activation=tf.nn.relu)
-        model_hidden2 = tf.layers.dense(inputs=model_hidden1, units=units, activation=tf.nn.relu)
-        self.model_prediction = tf.layers.dense(inputs=model_hidden2, units=self.state_size + 1)
-        model_expected = tf.concat([self.states1, self.values], axis=1)
-        self.model_loss = tf.reduce_mean(tf.losses.mean_squared_error(model_expected, self.model_prediction))
-        self.model_run_train = tf.train.AdagradOptimizer(.1).minimize(self.model_loss)
-        self.model_prediction_states1 = tf.clip_by_value(tf.slice(self.model_prediction, [0, 0], [-1, self.state_size]), -1, 1)
-        self.model_prediction_values = tf.clip_by_value(tf.slice(self.model_prediction, [0, self.state_size], [-1, 1]), -1, 1)
+        # regularizer = tf.contrib.layers.l2_regularizer(0.9)
+
+        value_hidden0 = tf.layers.dense(inputs=model_input, units=units, activation=tf.nn.relu)
+        value_dropout0 = tf.nn.dropout(value_hidden0, self.keep_prob)
+        # value_hidden0 = tf.layers.dense(inputs=model_input, units=units, activation=tf.nn.relu, kernel_regularizer=regularizer)
+        # value_hidden1 = tf.layers.dense(inputs=value_hidden0, units=units, activation=tf.nn.relu)
+        self.value_prediction = tf.layers.dense(inputs=value_dropout0, units=1)
+        self.value_loss = tf.reduce_mean(tf.losses.mean_squared_error(self.values, self.value_prediction))
+        self.value_run_train = tf.train.AdagradOptimizer(.1).minimize(self.value_loss)
+
+        state_hidden0 = tf.layers.dense(inputs=model_input, units=units, activation=tf.nn.relu)
+        # state_hidden1 = tf.layers.dense(inputs=state_hidden0, units=units, activation=tf.nn.relu)
+        self.state_prediction = tf.layers.dense(inputs=state_hidden0, units=self.state_size)
+        self.state_loss = tf.reduce_mean(tf.losses.mean_squared_error(self.states1, self.state_prediction))
+        self.state_run_train = tf.train.AdagradOptimizer(.1).minimize(self.state_loss)
+
+        # self.model_prediction_states1 = tf.slice(self.model_prediction, [0, 0], [-1, self.state_size])
+        # self.model_prediction_values = tf.slice(self.model_prediction, [0, self.state_size], [-1, 1])
 
         dqn_hidden0 = tf.layers.dense(inputs=self.states0, units=units, activation=tf.nn.relu)
         dqn_hidden1 = tf.layers.dense(inputs=dqn_hidden0, units=units, activation=tf.nn.relu)
-        # dqn_hidden2 = tf.layers.dense(inputs=dqn_hidden1, units=units, activation=tf.nn.relu)
         self.dqn_prediction = tf.layers.dense(inputs=dqn_hidden1, units=self.action_size)
         self.dqn_expected = tf.placeholder(tf.float32, shape=(None, self.action_size))
         self.dqn_loss = tf.reduce_mean(tf.losses.mean_squared_error(self.dqn_expected, self.dqn_prediction))
@@ -53,7 +68,7 @@ class Model:
         saver.save(self.sess, 'graph/graph')
 
     def model_run(self, states, actions):
-        return self.sess.run([self.model_prediction_states1, self.model_prediction_values], feed_dict={self.states0: states, self.actions: actions})
+        return self.sess.run([self.state_prediction, self.value_prediction], feed_dict={self.states0: states, self.actions: actions})
 
     def dqn_run(self, states):
         return self.sess.run(self.dqn_prediction, feed_dict={self.states0: states})
@@ -64,7 +79,7 @@ class Model:
         states1 = np.array([], dtype=np.float).reshape(0, self.state_size)
         values = np.array([], dtype=np.float).reshape(0, 1)
 
-        training_count = 100
+        training_count = 500
         training_data = experiences.get()
         if len(training_data) > training_count:
             training_experiences = np.random.choice(training_data, training_count)
@@ -82,13 +97,15 @@ class Model:
             states1 = np.concatenate((states1, np.reshape(state1, (1, self.state_size))), axis=0)
             values = np.concatenate((values, np.reshape(value, (1, 1))), axis=0)
 
-        feed_dict = {self.states0: states0, self.actions: actions, self.states1: states1, self.values: values}
-        loss = math.inf
+        feed_dict = {self.states0: states0, self.actions: actions, self.states1: states1, self.values: values, self.keep_prob: 1.0, self.stddev: 0.0}
         for i in range(1000):
-            loss, _ = self.sess.run([self.model_loss, self.model_run_train], feed_dict=feed_dict)
-        return loss
+            value_loss, state_loss, _, _ = self.sess.run([self.value_loss, self.state_loss, self.value_run_train, self.state_run_train], feed_dict=feed_dict)
+        return value_loss, state_loss
 
     def dqn_train(self, experiences):
+        X = np.array([], dtype=np.float).reshape(0, self.states0.shape[1])
+        Y = np.array([], dtype=np.float).reshape(0, self.action_size)
+
         training_count = 10
         training_data = experiences.get()
 
@@ -113,7 +130,7 @@ class Model:
                 X = np.concatenate((X, np.reshape(state0, (1, self.state_size))), axis=0)
                 Y = np.concatenate((Y, np.reshape(actions0, (1, self.action_size))), axis=0)
 
-                for i in range(100):
+                for i in range(10):
                     states0 = [state0] * self.action_size
                     actions = np.arange(self.action_size).reshape((self.action_size, 1))
                     states1, values = self.model_run(states0, actions)

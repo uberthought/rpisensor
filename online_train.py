@@ -40,13 +40,10 @@ while True:
             action = abs(action - 1)
             # action = np.random.choice(2, 1)[0]
 
-    # force = False
-    # if temperature < target - target_delta:
-    #     action = 1
-    #     force = True
-    # elif temperature > target + target_delta:
-    #     action = 0
-    #     force = True
+    if temperature < target - target_delta:
+        action = 1
+    elif temperature > target + target_delta:
+        action = 0
 
     if action == 0:
         solenoid.switchOff()

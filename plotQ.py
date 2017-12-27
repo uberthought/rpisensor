@@ -43,7 +43,7 @@ fig, ax = plt.subplots(figsize=(20, 10))
 ax.plot(temperatures, [x[0] for x in actions2], label='off', color='blue')
 ax.plot(temperatures, [x[1] for x in actions2], label='on', color='red')
 # ax.plot(temperatures, triggers, label='trigger', color='gray')
-ax.plot(temperatures, diff, label='on vs. off', color='gray')
+# ax.plot(temperatures, diff, label='on vs. off', color='gray')
 
 legend = ax.legend(loc='lower right')
 for label in legend.get_lines():

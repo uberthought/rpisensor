@@ -2,6 +2,7 @@ import tensorflow as tf
 import numpy as np
 import os.path
 import math
+import time
 
 def sigmoid(v):
     if v < -700:
@@ -11,6 +12,7 @@ def sigmoid(v):
 
 class Model:
     def __init__(self, state_size, action_size):
+
         self.state_size = state_size
         self.action_size = action_size
 
@@ -20,36 +22,31 @@ class Model:
         self.values = tf.placeholder(tf.float32, shape=(None, 1), name='values')
 
         self.stddev = tf.placeholder_with_default(0.0, [])
-        self.keep_prob = tf.placeholder_with_default(1.0, [])
+        self.regularizer_scale = tf.placeholder_with_default(0.0, [])
 
+        units = 64
 
-        units = 4
+        regularizer = tf.contrib.layers.l1_regularizer(self.regularizer_scale)
 
-        # noise_vector = tf.random_normal(shape=tf.shape(self.input_layer), mean=0.0, stddev=self.stddev, dtype=tf.float32)
-        # self.noise = tf.add(self.input_layer, noise_vector)
+        noise_vector = tf.random_normal(shape=tf.shape(self.states0), mean=0.0, stddev=self.stddev, dtype=tf.float32)
+        noisy_state0 = tf.add(self.states0, noise_vector)
 
-        model_input = tf.concat([self.states0, self.actions], axis=1)
-        # regularizer = tf.contrib.layers.l2_regularizer(0.9)
+        model_input = tf.concat([noisy_state0, self.actions], axis=1)
 
-        value_hidden0 = tf.layers.dense(inputs=model_input, units=units, activation=tf.nn.relu)
-        value_dropout0 = tf.nn.dropout(value_hidden0, self.keep_prob)
-        # value_hidden0 = tf.layers.dense(inputs=model_input, units=units, activation=tf.nn.relu, kernel_regularizer=regularizer)
-        # value_hidden1 = tf.layers.dense(inputs=value_hidden0, units=units, activation=tf.nn.relu)
-        self.value_prediction = tf.layers.dense(inputs=value_dropout0, units=1)
+        value_hidden0 = tf.layers.dense(inputs=model_input, units=units, activation=tf.nn.relu, kernel_regularizer=regularizer)
+        value_hidden1 = tf.layers.dense(inputs=value_hidden0, units=units, activation=tf.nn.relu, kernel_regularizer=regularizer)
+        self.value_prediction = tf.layers.dense(inputs=value_hidden1, units=1)
         self.value_loss = tf.reduce_mean(tf.losses.mean_squared_error(self.values, self.value_prediction))
         self.value_run_train = tf.train.AdagradOptimizer(.1).minimize(self.value_loss)
 
-        state_hidden0 = tf.layers.dense(inputs=model_input, units=units, activation=tf.nn.relu)
-        # state_hidden1 = tf.layers.dense(inputs=state_hidden0, units=units, activation=tf.nn.relu)
-        self.state_prediction = tf.layers.dense(inputs=state_hidden0, units=self.state_size)
+        state_hidden0 = tf.layers.dense(inputs=model_input, units=units, activation=tf.nn.relu, kernel_regularizer=regularizer)
+        state_hidden1 = tf.layers.dense(inputs=state_hidden0, units=units, activation=tf.nn.relu, kernel_regularizer=regularizer)
+        self.state_prediction = tf.layers.dense(inputs=state_hidden1, units=self.state_size)
         self.state_loss = tf.reduce_mean(tf.losses.mean_squared_error(self.states1, self.state_prediction))
         self.state_run_train = tf.train.AdagradOptimizer(.1).minimize(self.state_loss)
 
-        # self.model_prediction_states1 = tf.slice(self.model_prediction, [0, 0], [-1, self.state_size])
-        # self.model_prediction_values = tf.slice(self.model_prediction, [0, self.state_size], [-1, 1])
-
-        dqn_hidden0 = tf.layers.dense(inputs=self.states0, units=units, activation=tf.nn.relu)
-        dqn_hidden1 = tf.layers.dense(inputs=dqn_hidden0, units=units, activation=tf.nn.relu)
+        dqn_hidden0 = tf.layers.dense(inputs=self.states0, units=units, activation=tf.nn.relu, kernel_regularizer=regularizer)
+        dqn_hidden1 = tf.layers.dense(inputs=dqn_hidden0, units=units, activation=tf.nn.relu, kernel_regularizer=regularizer)
         self.dqn_prediction = tf.layers.dense(inputs=dqn_hidden1, units=self.action_size)
         self.dqn_expected = tf.placeholder(tf.float32, shape=(None, self.action_size))
         self.dqn_loss = tf.reduce_mean(tf.losses.mean_squared_error(self.dqn_expected, self.dqn_prediction))
@@ -79,12 +76,10 @@ class Model:
         states1 = np.array([], dtype=np.float).reshape(0, self.state_size)
         values = np.array([], dtype=np.float).reshape(0, 1)
 
-        training_count = 500
         training_data = experiences.get()
-        if len(training_data) > training_count:
-            training_experiences = np.random.choice(training_data, training_count)
-        else:
-            training_experiences = training_data
+
+        training_count = 100
+        training_experiences = np.random.choice(training_data, training_count)
 
         for experience in training_experiences:
             state0 = experience.state0
@@ -97,56 +92,55 @@ class Model:
             states1 = np.concatenate((states1, np.reshape(state1, (1, self.state_size))), axis=0)
             values = np.concatenate((values, np.reshape(value, (1, 1))), axis=0)
 
-        feed_dict = {self.states0: states0, self.actions: actions, self.states1: states1, self.values: values, self.keep_prob: 1.0, self.stddev: 0.0}
-        for i in range(1000):
+        feed_dict = {self.states0: states0, self.actions: actions, self.states1: states1, self.values: values, self.regularizer_scale: 0.1, self.stddev: 0.0}
+        start = time.time()
+        while (time.time() - start) < 1:
             value_loss, state_loss, _, _ = self.sess.run([self.value_loss, self.state_loss, self.value_run_train, self.state_run_train], feed_dict=feed_dict)
         return value_loss, state_loss
 
     def dqn_train(self, experiences):
-        X = np.array([], dtype=np.float).reshape(0, self.states0.shape[1])
-        Y = np.array([], dtype=np.float).reshape(0, self.action_size)
+        discount = 1.1
 
-        training_count = 10
+        states0 = np.array([], dtype=np.float).reshape(0, self.states0.shape[1])
+        expected = np.array([], dtype=np.float).reshape(0, self.action_size)
+
         training_data = experiences.get()
 
-        for j in range(training_count):
-            X = np.array([], dtype=np.float).reshape(0, self.states0.shape[1])
-            Y = np.array([], dtype=np.float).reshape(0, self.action_size)
+        start = time.time()
+        while (time.time() - start) < 1:
+            states0 = np.array([], dtype=np.float).reshape(0, self.states0.shape[1])
+            expected = np.array([], dtype=np.float).reshape(0, self.action_size)
 
-            if len(training_data) > training_count:
-                training_experiences = np.random.choice(training_data, training_count)
-            else:
-                training_experiences = training_data
+            experience = np.random.choice(training_data)
 
-            for experience in training_experiences:
-                state0 = experience.state0
-                state1 = experience.state1
-                action = experience.action
-                value = experience.value
+            state0 = experience.state0
+            state1 = experience.state1
+            action = experience.action
+            value = experience.value
 
-                [actions0, actions1] = self.dqn_run([state0, state1])
-                action = np.argmax(actions0)
-                actions0[action] = sigmoid(value + np.max(actions1))
-                X = np.concatenate((X, np.reshape(state0, (1, self.state_size))), axis=0)
-                Y = np.concatenate((Y, np.reshape(actions0, (1, self.action_size))), axis=0)
+            [actions0, actions1] = self.dqn_run([state0, state1])
+            action = np.argmax(actions0)
+            actions0[action] = sigmoid(value * discount + np.max(actions1) * discount)
+            states0 = np.concatenate((states0, np.reshape(state0, (1, self.state_size))), axis=0)
+            expected = np.concatenate((expected, np.reshape(actions0, (1, self.action_size))), axis=0)
 
-                for i in range(10):
-                    states0 = [state0] * self.action_size
-                    actions = np.arange(self.action_size).reshape((self.action_size, 1))
-                    states1, values = self.model_run(states0, actions)
+            for i in range(10):
+                states = [state0] * self.action_size
+                actions = np.arange(self.action_size).reshape((self.action_size, 1))
+                states1, values = self.model_run(states, actions)
 
-                    actions0 = self.dqn_run(states0)
-                    actions1 = self.dqn_run(states1)
-                    action = [np.argmax(actions0)]
-                    actions0 = [sigmoid(values[x] + np.max(actions1[x])) for x in range(self.action_size)]
+                actions0 = self.dqn_run(states)
+                actions1 = self.dqn_run(states1)
+                action = [np.argmax(actions0)]
+                actions0 = [sigmoid(values[x] * discount + np.max(actions1[x] * discount)) for x in range(self.action_size)]
 
-                    if not np.reshape(state0, (1, self.state_size)) in X:
-                        X = np.concatenate((X, np.reshape(state0, (1, self.state_size))), axis=0)
-                        Y = np.concatenate((Y, np.reshape(actions0, (1, self.action_size))), axis=0)
-                    state0 = states1[action][0]
+                if not np.reshape(state0, (1, self.state_size)) in states0:
+                    states0 = np.concatenate((states0, np.reshape(state0, (1, self.state_size))), axis=0)
+                    expected = np.concatenate((expected, np.reshape(actions0, (1, self.action_size))), axis=0)
+                state0 = states1[action][0]
             
-            feed_dict = {self.states0: X, self.dqn_expected: Y}
-            loss = math.inf
-            for i in range(1000):
+            feed_dict = {self.states0: states0, self.dqn_expected: expected, self.regularizer_scale: 0.1}
+            loss, _ = self.sess.run([self.dqn_loss, self.dqn_run_train], feed_dict=feed_dict)
+            while (time.time() - start) < 1 and loss > 0.01:
                 loss, _ = self.sess.run([self.dqn_loss, self.dqn_run_train], feed_dict=feed_dict)
         return loss

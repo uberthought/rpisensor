@@ -17,7 +17,8 @@ class Experience:
 
     def getValue(temperature, target, target_delta):
         result = (target_delta - math.fabs(temperature - target)) / target_delta
-        result = result * 9
+        result = result * 10
+        result = np.clip(result, -10, 10)
         return result
 
 class TrainingExperience:
@@ -73,6 +74,7 @@ class Experiences:
             value0 = value1
             value1 = Experience.getValue(experience1.temperature, experience1.target, experience1.target_delta)
             value = value1 - value0
+            value = np.clip(value, -1, 1)
 
             if value != 0:
                 result.append(TrainingExperience(state0, state1, action, value))

@@ -65,4 +65,4 @@ while True:
 
     value = Experience.getValue(temperature, target, target_delta)
 
-    print(temperature * 9 / 5 + 32, state, action, actions, value)
+    print(temperature * 9 / 5 + 32, state, action, actions, value, model_loss, dqn_loss)

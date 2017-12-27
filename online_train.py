@@ -16,7 +16,7 @@ sensor = solenoid = simulation = Simulation.init()
 # sensor = Sensor()
 # solenoid = Solenoid()
 experiences = Experiences()
-model = Model(2, 2)
+model = Model(3, 2)
 
 print('experiences ', len(experiences.get()))
 

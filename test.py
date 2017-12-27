@@ -4,7 +4,7 @@ from Simulation import Simulation
 # from Sensor import Sensor
 # from Solenoid import Solenoid
 from network import Model
-from Experiences import Experiences
+from Experiences import Experience, Experiences
 from Settings import Settings
 
 import time
@@ -24,41 +24,34 @@ target = Settings.getTargetC()
 target_delta = Settings.getTargetDelta()
 temperature, humidity, timestamp = sensor.gather()
 experiences.add(temperature, humidity, solenoid.on, timestamp, target, target_delta)
+experiences.add(temperature, humidity, solenoid.on, timestamp, target, target_delta)
 experience = experiences.getLast()
-state = experience.state0
+state = []
+actions = []
 action = 0
 
 while True:
-    
-    simulation.step()
 
-    if Settings.getOn():
-
-        experience = experiences.getLast()
+    if experience.value != 0:
         state = experience.state0
         actions = model.dqn_run([state])
         action = np.argmax(actions)
 
-        if temperature < target - target_delta:
-            action = 1
-        elif temperature > target + target_delta:
-            action = 0
-
-        if action == 0:
-            solenoid.switchOff()
-        else:
-            solenoid.switchOn()
-
-        temperature, humidity, timestamp = sensor.gather()
-        experiences.add(temperature, humidity, solenoid.isOn(), timestamp, target, target_delta)
-
-        target = Settings.getTargetC()
-        target_delta = Settings.getTargetDelta()
-
-        print(temperature * 9 / 5 + 32, state, action, 'actions', actions, 'value', experience.value)
-
+    if action == 0:
+        solenoid.switchOff()
     else:
-        temperature, humidity, timestamp = sensor.gather()
-        print(temperature * 9 / 5 + 32)
+        solenoid.switchOn()
 
-    time.sleep(5)
+    simulation.step()
+    temperature, humidity, timestamp = sensor.gather()
+    # if not force:
+    experiences.add(temperature, humidity, solenoid.isOn(), timestamp, target, target_delta)
+    experience = experiences.getLast()
+
+    target = Settings.getTargetC()
+    target_delta = Settings.getTargetDelta()
+    model.save()
+
+    value = Experience.getValue(temperature, target, target_delta)
+
+    print(temperature * 9 / 5 + 32, state, action, actions, value)

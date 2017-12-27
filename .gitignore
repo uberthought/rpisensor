@@ -1,0 +1,6 @@
+.*.png
+.*.py
+*.p
+__pycache__
+graph
+plot.png

@@ -8,11 +8,12 @@ experiences = Experiences()
 
 print('experiences ', len(experiences.get()))
 
-for i in range(5):
-    state_loss = model.state_train(experiences, True)
-    print('state', state_loss)
-    value_loss = model.value_train(experiences, True)
-    print('value', value_loss)
-    dqn_loss = model.dqn_train(experiences, True)
+for i in range(10):
+    model_loss = model.model_train(experiences)
+    print('model', model_loss)
+    model.save()
+
+for i in range(10):
+    dqn_loss = model.dqn_train(experiences)
     print('dqn', dqn_loss)
     model.save()

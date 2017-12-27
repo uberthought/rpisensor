@@ -12,7 +12,7 @@ class Settings:
         self.target = toC(75)
         self.target_delta = 1.0
         self.on = True
-        self.load()
+        # self.load()
     
     def load(self):
         if os.path.exists('settings.p'):

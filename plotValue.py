@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 
-# import matplotlib
-# matplotlib.use('Agg')
+import matplotlib
+matplotlib.use('Agg')
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -73,5 +73,5 @@ for label in legend.get_lines():
 for label in legend.get_texts():
     label.set_fontsize('large')
 
-plt.savefig("plot.png")
+plt.savefig("plotValue.png")
 plt.show()

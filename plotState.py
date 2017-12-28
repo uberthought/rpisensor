@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 
-# import matplotlib
-# matplotlib.use('Agg')
+import matplotlib
+matplotlib.use('Agg')
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -98,5 +98,5 @@ legend = ax.legend(loc='lower right')
 for label in legend.get_texts():
     label.set_fontsize('large')
 
-plt.savefig("plot.png")
+plt.savefig("plotState.png")
 plt.show()

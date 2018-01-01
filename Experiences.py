@@ -39,9 +39,11 @@ class Experiences:
 
     def temperatureToState(self, temperature, target):
         return temperature - target
+        # return temperature
 
     def stateToTemperature(self, state):
         return state[2] + state[0]
+        # return state[2]
 
     def get(self):
         result = []
@@ -51,6 +53,7 @@ class Experiences:
 
         experience0 = self.experiences[0]
         state1 = [0] * 3
+        # state1 = [experience0.temperature] * 3
         state1[0] = experience0.target
 
         value1 = Experience.getValue(experience0.temperature, experience0.target)

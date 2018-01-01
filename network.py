@@ -17,11 +17,24 @@ class Model:
 
         self.regularizer_scale = tf.placeholder_with_default(0.0, [])
 
+        state_max = tf.get_variable("state_max", shape=(self.state_size), initializer=tf.constant_initializer(-math.inf))
+        states_max = tf.concat([self.states0, [state_max]], axis=0)
+        state_max = state_max.assign(tf.reduce_max(states_max, axis=0))
+
+        state_min = tf.get_variable("state_min", shape=(self.state_size), initializer=tf.constant_initializer(math.inf))
+        states_min = tf.concat([self.states0, [state_min]], axis=0)
+        state_min = state_min.assign(tf.reduce_min(states_min, axis=0))
+
+        diff = tf.subtract(state_max, state_min)
+        diff = tf.where(tf.equal(diff, 0.0), tf.ones_like(diff), diff)
+
+        normal_states0 = tf.divide(tf.subtract(self.states0, state_min), diff)
+
         units = 64
 
         regularizer = tf.contrib.layers.l1_regularizer(self.regularizer_scale)
 
-        model_input = tf.concat([self.states0, self.actions], axis=1)
+        model_input = tf.concat([normal_states0, self.actions], axis=1)
 
         value_hidden0 = tf.layers.dense(inputs=model_input, units=units, activation=tf.nn.relu, kernel_regularizer=regularizer)
         value_hidden1 = tf.layers.dense(inputs=value_hidden0, units=units, activation=tf.nn.relu, kernel_regularizer=regularizer)
@@ -35,7 +48,7 @@ class Model:
         self.state_loss = tf.reduce_mean(tf.losses.mean_squared_error(self.states1, self.state_prediction))
         self.state_run_train = tf.train.AdagradOptimizer(.1).minimize(self.state_loss)
 
-        dqn_hidden0 = tf.layers.dense(inputs=self.states0, units=units, activation=tf.nn.relu, kernel_regularizer=regularizer)
+        dqn_hidden0 = tf.layers.dense(inputs=normal_states0, units=units, activation=tf.nn.relu, kernel_regularizer=regularizer)
         dqn_hidden1 = tf.layers.dense(inputs=dqn_hidden0, units=units, activation=tf.nn.relu, kernel_regularizer=regularizer)
         self.dqn_prediction = tf.layers.dense(inputs=dqn_hidden1, units=self.action_size)
         self.dqn_expected = tf.placeholder(tf.float32, shape=(None, self.action_size))

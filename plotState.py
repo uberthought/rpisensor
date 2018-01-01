@@ -50,27 +50,12 @@ for experience in fooFake:
 fooFake = experiencesFake.get()[2:]
 predictedOn = []
 predictedOff = []
-diffOn = []
-diffOff = []
 temperatures = []
-sensor = solenoid = simulation = Simulation.init()
 
 for experience in fooFake:
     state0 = experience.state0
 
     temperature0 = experiences.stateToTemperature(experience.state0)
-
-    simulation.temperature = temperature0
-    simulation.switchOff()
-    simulation.step()
-    temperature1, _, _ = sensor.gather()
-    state10 = experiences.temperatureToState(temperature1, target)
-
-    simulation.temperature = temperature0
-    simulation.switchOn()
-    simulation.step()
-    temperature1, _, _ = sensor.gather()
-    state11 = experiences.temperatureToState(temperature1, target)
 
     states0 = [state0, state0]
     actions = [[0], [1]]
@@ -79,16 +64,12 @@ for experience in fooFake:
     temperatures.append(experiences.stateToTemperature(state0))
     predictedOff.append(experiences.stateToTemperature(states1[0]))
     predictedOn.append(experiences.stateToTemperature(states1[1]))
-    diffOff.append(states1[0][2] - state10)
-    diffOn.append(states1[1][2] - state11)
 
 fig, ax = plt.subplots(figsize=(20, 10))
 ax.plot(temperaturesOn, state1On, 'o', label='on', color='red')
 ax.plot(temperaturesOff, state1Off, 'o', label='off', color='blue')
 ax.plot(temperatures, predictedOn, label='predicted on', color='red')
 ax.plot(temperatures, predictedOff, label='predicted off', color='blue')
-# ax.plot(temperatures, diffOn, label='diff on', color='red')
-# ax.plot(temperatures, diffOff, label='diff off', color='blue')
 
 legend = ax.legend(loc='lower right')
 for label in legend.get_texts():

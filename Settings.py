@@ -9,7 +9,7 @@ def toC(f):
 
 class Settings:
     def __init__(self):
-        self.target = toC(75)
+        self.target = toC(74.25)
         self.on = True
         # self.load()
     

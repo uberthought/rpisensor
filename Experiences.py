@@ -37,13 +37,8 @@ class Experiences:
         experience = Experience(temperature, humidity, solenoid, timestamp, target)
         self.experiences.append(experience)
 
-    def temperatureToState(self, temperature, target):
-        return temperature - target
-        # return temperature
-
     def stateToTemperature(self, state):
-        return state[2] + state[0]
-        # return state[2]
+        return state[2]
 
     def get(self):
         result = []
@@ -52,8 +47,7 @@ class Experiences:
             return result
 
         experience0 = self.experiences[0]
-        state1 = [0] * 3
-        # state1 = [experience0.temperature] * 3
+        state1 = [experience0.temperature] * 3
         state1[0] = experience0.target
 
         value1 = Experience.getValue(experience0.temperature, experience0.target)
@@ -63,7 +57,7 @@ class Experiences:
             # state
             state0 = state1[:]
             del state1[1]
-            state1.append(self.temperatureToState(experience1.temperature, experience1.target))
+            state1.append(experience1.temperature)
             state1[0] = experience1.target
 
             # action

@@ -38,19 +38,25 @@ class Model:
 
         value_hidden0 = tf.layers.dense(inputs=model_input, units=units, activation=tf.nn.relu, kernel_regularizer=regularizer)
         value_hidden1 = tf.layers.dense(inputs=value_hidden0, units=units, activation=tf.nn.relu, kernel_regularizer=regularizer)
-        self.value_prediction = tf.layers.dense(inputs=value_hidden1, units=1)
+        value_hidden2 = tf.layers.dense(inputs=value_hidden1, units=units, activation=tf.nn.relu, kernel_regularizer=regularizer)
+        value_hidden3 = tf.layers.dense(inputs=value_hidden2, units=units, activation=tf.nn.relu, kernel_regularizer=regularizer)
+        self.value_prediction = tf.layers.dense(inputs=value_hidden3, units=1)
         self.value_loss = tf.reduce_mean(tf.losses.mean_squared_error(self.values, self.value_prediction))
         self.value_run_train = tf.train.AdagradOptimizer(.1).minimize(self.value_loss)
 
         state_hidden0 = tf.layers.dense(inputs=model_input, units=units, activation=tf.nn.relu, kernel_regularizer=regularizer)
         state_hidden1 = tf.layers.dense(inputs=state_hidden0, units=units, activation=tf.nn.relu, kernel_regularizer=regularizer)
-        self.state_prediction = tf.layers.dense(inputs=state_hidden1, units=self.state_size)
+        state_hidden2 = tf.layers.dense(inputs=state_hidden1, units=units, activation=tf.nn.relu, kernel_regularizer=regularizer)
+        state_hidden3 = tf.layers.dense(inputs=state_hidden2, units=units, activation=tf.nn.relu, kernel_regularizer=regularizer)
+        self.state_prediction = tf.layers.dense(inputs=state_hidden3, units=self.state_size)
         self.state_loss = tf.reduce_mean(tf.losses.mean_squared_error(self.states1, self.state_prediction))
         self.state_run_train = tf.train.AdagradOptimizer(.1).minimize(self.state_loss)
 
         dqn_hidden0 = tf.layers.dense(inputs=normal_states0, units=units, activation=tf.nn.relu, kernel_regularizer=regularizer)
         dqn_hidden1 = tf.layers.dense(inputs=dqn_hidden0, units=units, activation=tf.nn.relu, kernel_regularizer=regularizer)
-        self.dqn_prediction = tf.layers.dense(inputs=dqn_hidden1, units=self.action_size)
+        dqn_hidden2 = tf.layers.dense(inputs=dqn_hidden1, units=units, activation=tf.nn.relu, kernel_regularizer=regularizer)
+        dqn_hidden3 = tf.layers.dense(inputs=dqn_hidden2, units=units, activation=tf.nn.relu, kernel_regularizer=regularizer)
+        self.dqn_prediction = tf.layers.dense(inputs=dqn_hidden3, units=self.action_size)
         self.dqn_expected = tf.placeholder(tf.float32, shape=(None, self.action_size))
         self.dqn_loss = tf.reduce_mean(tf.losses.mean_squared_error(self.dqn_expected, self.dqn_prediction))
         self.dqn_run_train = tf.train.AdagradOptimizer(.1).minimize(self.dqn_loss)
@@ -127,7 +133,7 @@ class Model:
             states0 = np.concatenate((states0, np.reshape(state0, (1, self.state_size))), axis=0)
             expected = np.concatenate((expected, np.reshape(actions0, (1, self.action_size))), axis=0)
 
-            for i in range(100):
+            for i in range(10):
                 states = [state0] * self.action_size
                 actions = np.arange(self.action_size).reshape((self.action_size, 1))
                 states1, values = self.model_run(states, actions)

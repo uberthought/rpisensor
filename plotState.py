@@ -15,11 +15,9 @@ experiences = Experiences()
 
 print('experiences ', len(experiences.experiences))
 
-temperatures = [x.temperature for x in experiences.experiences]
 target = experiences.experiences[-1].target
-min = np.min([np.min(temperatures), target])
-max = np.max([np.max(temperatures), target])
-
+min = target - 1
+max = target + 1
 
 experiencesFake = Experiences()
 experiencesFake.experiences = []

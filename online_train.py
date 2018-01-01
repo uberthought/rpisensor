@@ -21,10 +21,9 @@ model = Model(3, 2)
 print('experiences ', len(experiences.get()))
 
 target = Settings.getTargetC()
-target_delta = Settings.getTargetDelta()
 temperature, humidity, timestamp = sensor.gather()
-experiences.add(temperature, humidity, solenoid.on, timestamp, target, target_delta)
-experiences.add(temperature, humidity, solenoid.on, timestamp, target, target_delta)
+experiences.add(temperature, humidity, solenoid.on, timestamp, target)
+experiences.add(temperature, humidity, solenoid.on, timestamp, target)
 experience = experiences.getLast()
 state = []
 actions = []
@@ -32,18 +31,12 @@ action = 0
 
 while True:
 
-    if experience.value != 0:
-        state = experience.state0
-        actions = model.dqn_run([state])
-        action = np.argmax(actions)
-        if random.random() < 0.05:
-            action = abs(action - 1)
-            # action = np.random.choice(2, 1)[0]
+    state = experience.state0
+    actions = model.dqn_run([state])
+    action = np.argmax(actions)
 
-    if temperature < target - target_delta:
-        action = 1
-    elif temperature > target + target_delta:
-        action = 0
+    # if random.random() < 0.05:
+    #     action = np.random.choice(2, 1)[0]
 
     if action == 0:
         solenoid.switchOff()
@@ -52,17 +45,15 @@ while True:
 
     simulation.step()
     temperature, humidity, timestamp = sensor.gather()
-    # if not force:
-    experiences.add(temperature, humidity, solenoid.isOn(), timestamp, target, target_delta)
+    experiences.add(temperature, humidity, solenoid.isOn(), timestamp, target)
     experience = experiences.getLast()
 
     model_loss = model.model_train(experiences)
     dqn_loss = model.dqn_train(experiences)
 
     target = Settings.getTargetC()
-    target_delta = Settings.getTargetDelta()
     model.save()
 
-    value = Experience.getValue(temperature, target, target_delta)
+    value = Experience.getValue(temperature, target)
 
     print(temperature * 9 / 5 + 32, state, action, actions, value, model_loss, dqn_loss)

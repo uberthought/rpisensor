@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 
-import matplotlib
-matplotlib.use('Agg')
+# import matplotlib
+# matplotlib.use('Agg')
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -14,18 +14,14 @@ experiences = Experiences()
 
 print('experiences ', len(experiences.experiences))
 
-# temperatures = [x.temperature for x in experiences.experiences]
-# min = np.min(temperatures)
-# max = np.max(temperatures)
-min = experiences.experiences[-1].target - experiences.experiences[-1].target_delta
-max = experiences.experiences[-1].target + experiences.experiences[-1].target_delta
 target = experiences.experiences[-1].target
-target_delta = experiences.experiences[-1].target_delta
+min = target - 1
+max = target + 1
 
 experiencesFake = Experiences()
 experiencesFake.experiences = []
 for temperature in np.arange(min, max, .01):
-    experiencesFake.add2(temperature, .5, False, 0, target, target_delta)
+    experiencesFake.add2(temperature, .5, False, 0, target)
 
 fooFake = experiencesFake.get()[2:]
 predictedOn = []
@@ -39,7 +35,7 @@ for experience in fooFake:
     actions = [[0], [1]]
     states1, values = model.model_run(states0, actions)
 
-    temperatures.append(state0[2])
+    temperatures.append(experiences.stateToTemperature(experience.state0))
     predictedOff.append(values[0][0])
     predictedOn.append(values[1][0])
 
@@ -54,10 +50,10 @@ for experience in fooFake:
     value = experience.value
 
     if experience.action[0] == 0:
-        temperaturesOff.append(state0[2])
+        temperaturesOff.append(experiences.stateToTemperature(state0))
         valuesOff.append(value)
     else:
-        temperaturesOn.append(state0[2])
+        temperaturesOn.append(experiences.stateToTemperature(state0))
         valuesOn.append(value)
 
 

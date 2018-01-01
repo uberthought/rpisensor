@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 
-import matplotlib
-matplotlib.use('Agg')
+# import matplotlib
+# matplotlib.use('Agg')
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -14,18 +14,14 @@ experiences = Experiences()
 
 print('experiences ', len(experiences.experiences))
 
-# min = experiences.experiences[-1].target - experiences.experiences[-1].target_delta
-# max = experiences.experiences[-1].target + experiences.experiences[-1].target_delta
-temperatures = [x.temperature for x in experiences.experiences]
-min = np.min(temperatures)
-max = np.max(temperatures)
 target = experiences.experiences[-1].target
-target_delta = experiences.experiences[-1].target_delta
+min = target - 1
+max = target + 1
 
 experiencesFake = Experiences()
 experiencesFake.experiences = []
 for temperature in np.arange(min, max, .01):
-        experiencesFake.add2(temperature, .5, False, 0, target, target_delta)
+        experiencesFake.add2(temperature, .5, False, 0, target)
 
 fooFake = experiencesFake.get()[2:]
 temperatures = []
@@ -34,7 +30,8 @@ triggers = []
 diff = []
 for experience in fooFake:
     actions = model.dqn_run([experience.state0])[0]
-    temperatures.append(experience.state1[2])
+    temperatures.append(experiences.stateToTemperature(experience.state1))
+    # temperatures.append(experience.state1[2])
     actions2.append(actions)
     triggers.append(np.sign(actions[1] - actions[0]))
     diff.append(actions[1] - actions[0])

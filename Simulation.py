@@ -29,7 +29,7 @@ class Simulation:
         if self.on:
             self.temperature += 10 / 60
 
-        self.temperature -= (math.pow(self.temperature, 7) / math.pow(30, 7) * 20) / 60
+        self.temperature -= (math.pow(self.temperature, 7) / math.pow(30, 7) * 30) / 60
 
         pickle.dump(self, open("simulation.p", "wb"))
 

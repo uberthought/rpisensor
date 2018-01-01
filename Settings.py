@@ -10,7 +10,6 @@ def toC(f):
 class Settings:
     def __init__(self):
         self.target = toC(75)
-        self.target_delta = 1.0
         self.on = True
         # self.load()
     
@@ -18,7 +17,6 @@ class Settings:
         if os.path.exists('settings.p'):
             settings = pickle.load(open("settings.p", "rb"))
             self.target = settings.target
-            self.target_delta = settings.target_delta
             self.on = settings.on
 
     def save(self):
@@ -45,10 +43,6 @@ class Settings:
     def getTargetC():
         settings.load()
         return settings.target
-
-    def getTargetDelta():
-        settings.load()
-        return settings.target_delta
 
 settings = Settings()
 

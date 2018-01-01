@@ -20,10 +20,9 @@ experiences = Experiences()
 print('experiences ', len(experiences.get()))
 
 target = Settings.getTargetC()
-target_delta = Settings.getTargetDelta()
 temperature, humidity, timestamp = sensor.gather()
-experiences.add(temperature, humidity, solenoid.on, timestamp, target, target_delta)
-experiences.add(temperature, humidity, solenoid.on, timestamp, target, target_delta)
+experiences.add(temperature, humidity, solenoid.on, timestamp, target)
+experiences.add(temperature, humidity, solenoid.on, timestamp, target)
 experience = experiences.getLast()
 action = 0
 
@@ -31,14 +30,14 @@ for i in range(100):
     
     experience = experiences.getLast()
     state = experience.state0
-    if random.random() < 0.57:
+    if random.random() < 0.2:
         action = 0
     else:
         action = 1
 
-    if temperature < target - target_delta:
+    if temperature < target - 1:
         action = 1
-    elif temperature > target + target_delta:
+    elif temperature > target + 1:
         action = 0
 
     if action == 0:
@@ -49,10 +48,9 @@ for i in range(100):
     simulation.step()
 
     temperature, humidity, timestamp = sensor.gather()
-    experiences.add(temperature, humidity, solenoid.isOn(), timestamp, target, target_delta)
+    experiences.add(temperature, humidity, solenoid.isOn(), timestamp, target)
 
     target = Settings.getTargetC()
-    target_delta = Settings.getTargetDelta()
 
     if i % 100 == 0:
         print(temperature * 9 / 5 + 32, state, action, experience.value)

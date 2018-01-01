@@ -21,10 +21,9 @@ model = Model(3, 2)
 print('experiences ', len(experiences.get()))
 
 target = Settings.getTargetC()
-target_delta = Settings.getTargetDelta()
 temperature, humidity, timestamp = sensor.gather()
-experiences.add(temperature, humidity, solenoid.on, timestamp, target, target_delta)
-experiences.add(temperature, humidity, solenoid.on, timestamp, target, target_delta)
+experiences.add(temperature, humidity, solenoid.on, timestamp, target)
+experiences.add(temperature, humidity, solenoid.on, timestamp, target)
 experience = experiences.getLast()
 state = []
 actions = []
@@ -45,13 +44,12 @@ while True:
     simulation.step()
     temperature, humidity, timestamp = sensor.gather()
     # if not force:
-    experiences.add(temperature, humidity, solenoid.isOn(), timestamp, target, target_delta)
+    experiences.add(temperature, humidity, solenoid.isOn(), timestamp, target)
     experience = experiences.getLast()
 
     target = Settings.getTargetC()
-    target_delta = Settings.getTargetDelta()
     model.save()
 
-    value = Experience.getValue(temperature, target, target_delta)
+    value = Experience.getValue(temperature, target)
 
     print(temperature * 9 / 5 + 32, state, action, actions, value)

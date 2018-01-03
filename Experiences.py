@@ -61,11 +61,18 @@ class Experiences:
             state1[0] = experience1.target
 
             # action
-            action = [1 if experience1.solenoid else 0]
+            if experience1.solenoid == 0:
+                action = 0
+            elif experience1.solenoid == 1:
+                action = 1
+            else:
+                action = 2
 
             # value
             value1 = Experience.getValue(experience1.temperature, experience1.target)
-            result.append(TrainingExperience(state0, state1, action, value1))
+
+            if state0[0] == state1[0] and state0[0] != state0[1] and state0[1] != state0[2] and state1[0] != state1[1] and state1[1] != state1[2]:
+                result.append(TrainingExperience(state0, state1, action, value1))
 
         return result
 
@@ -73,4 +80,4 @@ class Experiences:
         foo = self.get()
         if any(foo):
             return foo[-1]
-        return TrainingExperience([], [], 0, 0)
+        return None

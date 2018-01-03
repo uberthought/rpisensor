@@ -10,7 +10,7 @@ from network import Model
 from Experiences import Experience, Experiences
 from Simulation import Simulation
 
-model = Model(3, 2)
+model = Model(3, 3)
 experiences = Experiences()
 
 print('experiences ', len(experiences.experiences))
@@ -40,6 +40,9 @@ for experience in fooFake:
     actions = [action]
     states1, values = model.model_run(states0, actions)
 
+    # print(state0)
+    # print(state1)
+
     if action[0] == 0:
         temperaturesOff.append(experiences.stateToTemperature(state0))
         state1Off.append(experiences.stateToTemperature(state1))
@@ -57,8 +60,8 @@ for experience in fooFake:
 
     temperature0 = experiences.stateToTemperature(experience.state0)
 
-    states0 = [state0, state0]
-    actions = [[0], [1]]
+    states0 = [state0] * 3
+    actions = np.arange(3).reshape((3, 1))
     states1, values = model.model_run(states0, actions)
 
     temperatures.append(experiences.stateToTemperature(state0))

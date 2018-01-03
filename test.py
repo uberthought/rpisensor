@@ -24,14 +24,14 @@ target = Settings.getTargetC()
 temperature, humidity, timestamp = sensor.gather()
 experiences.add(temperature, humidity, solenoid.on, timestamp, target)
 experiences.add(temperature, humidity, solenoid.on, timestamp, target)
-experience = experiences.getLast()
+experience = None
 state = []
 actions = []
 action = 0
 
 while True:
 
-    if experience.value != 0:
+    if experience is None:
         state = experience.state0
         actions = model.dqn_run([state])
         action = np.argmax(actions)
@@ -43,12 +43,11 @@ while True:
 
     simulation.step()
     temperature, humidity, timestamp = sensor.gather()
-    # if not force:
+
     experiences.add(temperature, humidity, solenoid.isOn(), timestamp, target)
     experience = experiences.getLast()
 
     target = Settings.getTargetC()
-    model.save()
 
     value = Experience.getValue(temperature, target)
 

@@ -9,15 +9,18 @@ import numpy as np
 from network import Model
 from Experiences import Experience, Experiences
 
-model = Model(3, 2)
+model = Model()
 experiences = Experiences()
 
 print('experiences ', len(experiences.experiences))
 
 target = experiences.experiences[-1].target
-temperatures = [x.temperature for x in experiences.experiences]
-min = np.min(temperatures)
-max = np.max(temperatures)
+# temperatures = [x.temperature for x in experiences.experiences]
+# min = np.min(temperatures)
+# max = np.max(temperatures)
+min = target - 0.5
+max = target + 0.5
+
 
 experiencesFake = Experiences()
 experiencesFake.experiences = []
@@ -28,20 +31,18 @@ fooFake = experiencesFake.get()[2:]
 temperatures = []
 actions2 = []
 triggers = []
-diff = []
 for experience in fooFake:
     actions = model.dqn_run([experience.state0])[0]
-    temperatures.append(experiences.stateToTemperature(experience.state1))
-    # temperatures.append(experience.state1[2])
+    temperatures.append(experience.state1[-1])
     actions2.append(actions)
-    triggers.append(np.sign(actions[1] - actions[0]))
-    diff.append(actions[1] - actions[0])
+    triggers.append(np.argmax(actions) / 3)
 
 fig, ax = plt.subplots(figsize=(20, 10))
 ax.plot(temperatures, [x[0] for x in actions2], label='off', color='blue')
-ax.plot(temperatures, [x[1] for x in actions2], label='on', color='red')
-# ax.plot(temperatures, triggers, label='trigger', color='gray')
-# ax.plot(temperatures, diff, label='on vs. off', color='gray')
+ax.plot(temperatures, [x[1] for x in actions2], label='low', color='green')
+ax.plot(temperatures, [x[2] for x in actions2], label='high', color='red')
+ax.plot(temperatures, [x[3] for x in actions2], label='ac', color='orange')
+ax.plot(temperatures, triggers, label='trigger', color='gray')
 
 legend = ax.legend(loc='lower right')
 for label in legend.get_lines():

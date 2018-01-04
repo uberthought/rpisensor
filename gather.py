@@ -16,39 +16,40 @@ sensor = solenoid = simulation = Simulation.init()
 # sensor = Sensor()
 # solenoid = Solenoid()
 experiences = Experiences()
+model = Model()
 
 print('experiences ', len(experiences.get()))
 
 target = Settings.getTargetC()
-temperature, humidity, timestamp = sensor.gather()
-experiences.add(temperature, humidity, solenoid.on, timestamp, target)
-experiences.add(temperature, humidity, solenoid.on, timestamp, target)
-experience = experiences.getLast()
+state = []
+actions = []
 action = 0
+experience = None
 
 for i in range(100):
     
-    experience = experiences.getLast()
-    state = experience.state0
-    if random.random() < 0.2:
-        action = 0
-    else:
-        action = 1
+    action = np.random.choice(Model.action_size, 1)[0]
 
-    if temperature < target - 1:
-        action = 1
-    elif temperature > target + 1:
-        action = 0
+    # if temperature < target - 1:
+    #     action = 1
+    # elif temperature > target + 1:
+    #     action = 0
 
     if action == 0:
         solenoid.switchOff()
     else:
         solenoid.switchOn()
 
-    simulation.step()
+    if action == 0:
+        solenoid.switchOff()
+    elif action == 1:
+        solenoid.switchLow()
+    else:
+        solenoid.switchHigh()
 
+    simulation.step()
     temperature, humidity, timestamp = sensor.gather()
-    experiences.add(temperature, humidity, solenoid.isOn(), timestamp, target)
+    experiences.add(temperature, humidity, solenoid.power, timestamp, target)
 
     target = Settings.getTargetC()
 

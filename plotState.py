@@ -10,15 +10,17 @@ from network import Model
 from Experiences import Experience, Experiences
 from Simulation import Simulation
 
-model = Model(3, 2)
+model = Model()
 experiences = Experiences()
 
 print('experiences ', len(experiences.experiences))
 
 target = experiences.experiences[-1].target
-temperatures = [x.temperature for x in experiences.experiences]
-min = np.min(temperatures)
-max = np.max(temperatures)
+# temperatures = [x.temperature for x in experiences.experiences]
+# min = np.min(temperatures)
+# max = np.max(temperatures)
+min = target - 0.5
+max = target + 0.5
 
 experiencesFake = Experiences()
 experiencesFake.experiences = []
@@ -26,10 +28,12 @@ for temperature in np.arange(min, max, .01):
     experiencesFake.add2(temperature, .5, False, 0, target)
 
 fooFake = experiences.get()
-state1On = []
-state1Off = []
-temperaturesOn = []
 temperaturesOff = []
+state1Off = []
+temperaturesLow = []
+state1Low = []
+temperaturesHigh = []
+state1High = []
 
 for experience in fooFake:
     state0 = experience.state0
@@ -40,36 +44,42 @@ for experience in fooFake:
     actions = [action]
     states1, values = model.model_run(states0, actions)
 
-    if action[0] == 0:
-        temperaturesOff.append(experiences.stateToTemperature(state0))
-        state1Off.append(experiences.stateToTemperature(state1))
+    if action[0] == 1:
+        temperaturesOff.append(state0[-1])
+        state1Off.append(state1[-1])
+    elif action[1] == 1:
+        temperaturesLow.append(state0[-1])
+        state1Low.append(state1[-1])
     else:
-        temperaturesOn.append(experiences.stateToTemperature(state0))
-        state1On.append(experiences.stateToTemperature(state1))
+        temperaturesHigh.append(state0[-1])
+        state1High.append(state1[-1])
 
 fooFake = experiencesFake.get()[2:]
-predictedOn = []
-predictedOff = []
 temperatures = []
+predicted = []
 
 for experience in fooFake:
     state0 = experience.state0
 
-    temperature0 = experiences.stateToTemperature(experience.state0)
+    temperature0 = experience.state0[-1]
 
-    states0 = [state0, state0]
-    actions = [[0], [1]]
+    states0 = [state0] * Model.action_size
+    actions = np.zeros((Model.action_size, Model.action_size))
+    for j in range(Model.action_size):
+        actions[j][j] = 1
     states1, values = model.model_run(states0, actions)
 
-    temperatures.append(experiences.stateToTemperature(state0))
-    predictedOff.append(experiences.stateToTemperature(states1[0]))
-    predictedOn.append(experiences.stateToTemperature(states1[1]))
+    temperatures.append(state0[-1])
+    predicted.append(states1[:,-1])
 
 fig, ax = plt.subplots(figsize=(20, 10))
-ax.plot(temperaturesOn, state1On, 'o', label='on', color='red')
 ax.plot(temperaturesOff, state1Off, 'o', label='off', color='blue')
-ax.plot(temperatures, predictedOn, label='predicted on', color='red')
-ax.plot(temperatures, predictedOff, label='predicted off', color='blue')
+ax.plot(temperaturesLow, state1Low, 'o', label='low', color='green')
+ax.plot(temperaturesHigh, state1High, 'o', label='high', color='red')
+ax.plot(temperatures, [x[0] for x in predicted], label='predicted off', color='blue')
+ax.plot(temperatures, [x[1] for x in predicted], label='predicted low', color='green')
+ax.plot(temperatures, [x[2] for x in predicted], label='predicted high', color='red')
+ax.plot(temperatures, [x[3] for x in predicted], label='predicted ac', color='orange')
 
 legend = ax.legend(loc='lower right')
 for label in legend.get_texts():

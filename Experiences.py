@@ -3,12 +3,14 @@ import os.path
 import numpy as np
 import math
 
+from network import Model
+
 class Experience:
 
-    def __init__(self, temperature, humidity, solenoid, timestamp, target):
+    def __init__(self, temperature, humidity, power, timestamp, target):
         self.temperature = temperature
         self.humidity = humidity
-        self.solenoid = solenoid
+        self.power = power
         self.timestamp = timestamp
         self.target = target
 
@@ -19,7 +21,7 @@ class TrainingExperience:
     def __init__(self, state0, state1, action, value):
         self.state0 = state0[:]
         self.state1 = state1[:]
-        self.action = action
+        self.action = action[:]
         self.value = value
 
 class Experiences:
@@ -28,17 +30,14 @@ class Experiences:
         if os.path.exists('experiences.p'):
             self.experiences = pickle.load(open("experiences.p", "rb"))
 
-    def add(self, temperature, humidity, solenoid, timestamp, target):
-        experience = Experience(temperature, humidity, solenoid, timestamp, target)
+    def add(self, temperature, humidity, power, timestamp, target):
+        experience = Experience(temperature, humidity, power, timestamp, target)
         self.experiences.append(experience)
         pickle.dump(self.experiences, open("experiences.p", "wb"))
 
-    def add2(self, temperature, humidity, solenoid, timestamp, target):
-        experience = Experience(temperature, humidity, solenoid, timestamp, target)
+    def add2(self, temperature, humidity, power, timestamp, target):
+        experience = Experience(temperature, humidity, power, timestamp, target)
         self.experiences.append(experience)
-
-    def stateToTemperature(self, state):
-        return state[2]
 
     def get(self):
         result = []
@@ -47,8 +46,7 @@ class Experiences:
             return result
 
         experience0 = self.experiences[0]
-        state1 = [experience0.temperature] * 3
-        state1[0] = experience0.target
+        state1 = [0] * Model.state_size
 
         value1 = Experience.getValue(experience0.temperature, experience0.target)
 
@@ -56,21 +54,23 @@ class Experiences:
 
             # state
             state0 = state1[:]
-            del state1[1]
-            state1.append(experience1.temperature)
-            state1[0] = experience1.target
+            del state1[0]
+            state1.append(experience1.temperature - experience1.target)
 
             # action
-            action = [1 if experience1.solenoid else 0]
+            action = np.zeros(Model.action_size)
+            action[experience1.power] = 1
 
             # value
             value1 = Experience.getValue(experience1.temperature, experience1.target)
+
             result.append(TrainingExperience(state0, state1, action, value1))
 
+            
         return result
 
     def getLast(self):
         foo = self.get()
         if any(foo):
             return foo[-1]
-        return TrainingExperience([], [], 0, 0)
+        return None

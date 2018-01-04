@@ -16,7 +16,7 @@ class Simulation:
         # self.temperature = Settings.getTargetC() + (random.random() - 0.5) * 2
         self.temperature = Settings.getTargetC()
         self.humidity = 50
-        self.on = False
+        self.power = 0
 
     def init():
         if os.path.exists('simulation.p'):
@@ -26,8 +26,12 @@ class Simulation:
     def step(self):
         self.t += self.tdelta
 
-        if self.on:
-            self.temperature += 10 / 60
+        if self.power == 1:
+            self.temperature += 3 / 60
+        elif self.power == 2:
+            self.temperature += 20 / 60
+        if self.power == 3:
+            self.temperature -= 3 / 60
 
         self.temperature -= (math.pow(self.temperature, 7) / math.pow(30, 7) * 30) / 60
 
@@ -38,12 +42,5 @@ class Simulation:
         timestamp = datetime.datetime.now()
         return self.temperature, 50, timestamp
 
-    def switchOn(self):
-        self.on = True
-
-    def switchOff(self):
-        self.on = False
-
-    def isOn(self):
-        return self.on
-
+    def setPower(self, power):
+        self.power = power

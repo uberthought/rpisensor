@@ -4,7 +4,7 @@ from network import Model
 from Experiences import Experiences
 import numpy as np
 
-model = Model(3, 2)
+model = Model()
 experiences = Experiences()
 
 print('experiences ', len(experiences.get()))

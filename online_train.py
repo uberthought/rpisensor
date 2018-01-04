@@ -16,36 +16,33 @@ sensor = solenoid = simulation = Simulation.init()
 # sensor = Sensor()
 # solenoid = Solenoid()
 experiences = Experiences()
-model = Model(3, 2)
+model = Model()
 
 print('experiences ', len(experiences.get()))
 
 target = Settings.getTargetC()
-temperature, humidity, timestamp = sensor.gather()
-experiences.add(temperature, humidity, solenoid.on, timestamp, target)
-experiences.add(temperature, humidity, solenoid.on, timestamp, target)
-experience = experiences.getLast()
 state = []
 actions = []
 action = 0
+experience = None
 
 while True:
 
-    state = experience.state0
-    actions = model.dqn_run([state])
-    action = np.argmax(actions)
+    if random.random() < 0.05:
+        experience = None
 
-    # if random.random() < 0.05:
-    #     action = np.random.choice(2, 1)[0]
-
-    if action == 0:
-        solenoid.switchOff()
+    if experience is None:
+        action = np.random.choice(Model.action_size, 1)[0]
     else:
-        solenoid.switchOn()
+        state = experience.state0
+        actions = model.dqn_run([state])
+        action = np.argmax(actions)
+
+    solenoid.setPower(action)
 
     simulation.step()
     temperature, humidity, timestamp = sensor.gather()
-    experiences.add(temperature, humidity, solenoid.isOn(), timestamp, target)
+    experiences.add(temperature, humidity, solenoid.power, timestamp, target)
     experience = experiences.getLast()
 
     model_loss = model.model_train(experiences)
@@ -56,4 +53,4 @@ while True:
 
     value = Experience.getValue(temperature, target)
 
-    print(temperature * 9 / 5 + 32, state, action, actions, value, model_loss, dqn_loss)
+    print(temperature, state, action, actions, value, model_loss, dqn_loss)

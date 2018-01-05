@@ -18,8 +18,6 @@ sensor = solenoid = simulation = Simulation.init()
 experiences = Experiences()
 model = Model()
 
-print('experiences ', len(experiences.get()))
-
 target = Settings.getTargetC()
 state = []
 actions = []
@@ -28,7 +26,7 @@ experience = None
 
 while True:
 
-    if random.random() < 0.05:
+    if random.random() < 0.1:
         experience = None
 
     if experience is None:
@@ -51,6 +49,6 @@ while True:
     target = Settings.getTargetC()
     model.save()
 
-    value = Experience.getValue(temperature, target)
+    value = Experience.getValue(temperature, target, action)
 
     print(temperature, state, action, actions, value, model_loss, dqn_loss)

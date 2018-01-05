@@ -9,10 +9,6 @@ experiences = Experiences()
 
 print('experiences ', len(experiences.get()))
 
-model_loss = model.model_train(experiences)
-print('model', model_loss)
-model.save()
-
 for i in range(10):
     model_loss = model.model_train(experiences)
     print('model', model_loss)

@@ -18,8 +18,8 @@ target = experiences.experiences[-1].target
 # temperatures = [x.temperature for x in experiences.experiences]
 # min = np.min(temperatures)
 # max = np.max(temperatures)
-min = target - 0.5
-max = target + 0.5
+min = target - 2
+max = target + 2
 
 experiencesFake = Experiences()
 experiencesFake.experiences = []
@@ -49,6 +49,8 @@ temperaturesLow = []
 valuesLow = []
 temperaturesHigh = []
 valuesHigh = []
+temperaturesAC = []
+valuesAC = []
 
 for experience in fooFake:
     state0 = experience.state0
@@ -60,9 +62,12 @@ for experience in fooFake:
     elif experience.action[1] == 1:
         temperaturesLow.append(state0[-1])
         valuesLow.append(value)
-    else:
+    elif experience.action[2] == 1:
         temperaturesHigh.append(state0[-1])
         valuesHigh.append(value)
+    elif experience.action[3] == 1:
+        temperaturesAC.append(state0[-1])
+        valuesAC.append(value)
 
 
 fig, ax = plt.subplots(figsize=(20, 10))
@@ -70,9 +75,10 @@ ax.plot(temperatures, [x[0] for x in predicted], label='predicted off', color='b
 ax.plot(temperatures, [x[1] for x in predicted], label='predicted low', color='green')
 ax.plot(temperatures, [x[2] for x in predicted], label='predicted high', color='red')
 ax.plot(temperatures, [x[3] for x in predicted], label='predicted ac', color='orange')
-ax.plot(temperaturesOff, valuesOff, 'o', label='actual off', color='blue')
-ax.plot(temperaturesLow, valuesLow, 'o', label='actual low', color='green')
-ax.plot(temperaturesHigh, valuesHigh, 'o', label='actual high', color='red')
+ax.plot(temperaturesOff, valuesOff, '.', label='actual off', color='blue')
+ax.plot(temperaturesLow, valuesLow, '.', label='actual low', color='green')
+ax.plot(temperaturesHigh, valuesHigh, '.', label='actual high', color='red')
+ax.plot(temperaturesAC, valuesAC, '.', label='actual ac', color='orange')
 
 legend = ax.legend(loc='lower right')
 for label in legend.get_lines():

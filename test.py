@@ -18,8 +18,6 @@ sensor = solenoid = simulation = Simulation.init()
 experiences = Experiences()
 model = Model()
 
-print('experiences ', len(experiences.get()))
-
 target = Settings.getTargetC()
 state = []
 actions = []
@@ -35,12 +33,7 @@ while True:
         actions = model.dqn_run([state])
         action = np.argmax(actions)
 
-    if action == 0:
-        solenoid.switchOff()
-    elif action == 1:
-        solenoid.switchLow()
-    else:
-        solenoid.switchHigh()
+    solenoid.setPower(action)
 
     simulation.step()
     temperature, humidity, timestamp = sensor.gather()
@@ -49,6 +42,6 @@ while True:
 
     target = Settings.getTargetC()
 
-    value = Experience.getValue(temperature, target)
+    value = Experience.getValue(temperature, target, action)
 
     print(temperature, state, action, actions, value)

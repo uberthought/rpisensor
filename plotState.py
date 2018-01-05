@@ -19,8 +19,8 @@ target = experiences.experiences[-1].target
 # temperatures = [x.temperature for x in experiences.experiences]
 # min = np.min(temperatures)
 # max = np.max(temperatures)
-min = target - 0.5
-max = target + 0.5
+min = target - 2
+max = target + 2
 
 experiencesFake = Experiences()
 experiencesFake.experiences = []
@@ -73,9 +73,9 @@ for experience in fooFake:
     predicted.append(states1[:,-1])
 
 fig, ax = plt.subplots(figsize=(20, 10))
-ax.plot(temperaturesOff, state1Off, 'o', label='off', color='blue')
-ax.plot(temperaturesLow, state1Low, 'o', label='low', color='green')
-ax.plot(temperaturesHigh, state1High, 'o', label='high', color='red')
+ax.plot(temperaturesOff, state1Off, '.', label='off', color='blue')
+ax.plot(temperaturesLow, state1Low, '.', label='low', color='green')
+ax.plot(temperaturesHigh, state1High, '.', label='high', color='red')
 ax.plot(temperatures, [x[0] for x in predicted], label='predicted off', color='blue')
 ax.plot(temperatures, [x[1] for x in predicted], label='predicted low', color='green')
 ax.plot(temperatures, [x[2] for x in predicted], label='predicted high', color='red')

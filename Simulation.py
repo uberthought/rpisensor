@@ -27,7 +27,7 @@ class Simulation:
         self.t += self.tdelta
 
         if self.power == 1:
-            self.temperature += 3 / 60
+            self.temperature += 4 / 60
         elif self.power == 2:
             self.temperature += 20 / 60
         if self.power == 3:

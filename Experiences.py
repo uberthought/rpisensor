@@ -19,11 +19,11 @@ class Experience:
     def getValue(temperature, target, power):
         value = 1 - math.fabs(temperature - target)
         if power == 3:
-            value -= 0.03
+            value -= 0.1
         if power == 2:
-            value -= 0.2
+            value -= 0.3
         if power == 1:
-            value -= 0.04
+            value -= 0.01
         return value
 
 class TrainingExperience:

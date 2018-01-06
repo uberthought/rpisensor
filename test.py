@@ -30,8 +30,7 @@ while True:
         action = np.random.choice(Model.action_size, 1)[0]
     else:
         state = experience.state0
-        actions = model.dqn_run([state])
-        action = np.argmax(actions)
+        action = model.dqn_run_action([state])
 
     solenoid.setPower(action)
 

@@ -45,6 +45,7 @@ class Model:
         self.dqn_expected = tf.placeholder(tf.float32, shape=(None, self.action_size))
         self.dqn_loss = tf.reduce_mean(tf.losses.mean_squared_error(self.dqn_expected, self.dqn_prediction))
         self.dqn_run_train = tf.train.AdagradOptimizer(.1).minimize(self.dqn_loss)
+        self.dqn_action = tf.argmax(self.dqn_prediction, axis=1)
 
         self.sess = tf.Session()
 
@@ -77,6 +78,9 @@ class Model:
 
     def dqn_run(self, states):
         return self.sess.run(self.dqn_prediction, feed_dict={self.states0: states})
+
+    def dqn_run_action(self, states):
+        return self.sess.run(self.dqn_action, feed_dict={self.states0: states})[0]
 
     def model_train(self, experiences):
         states0 = np.array([], dtype=np.float).reshape(0, Model.state_size)
@@ -145,9 +149,8 @@ class Model:
                         actions[j][j] = 1
                     states1, values = self.model_run(states, actions)
 
-                    actions0 = self.dqn_run(states)
                     actions1 = self.dqn_run(states1)
-                    action = [np.argmax(actions0)]
+                    action = [self.dqn_run_action(states)]
                     actions0 = [(1 - discount) * values[x] + discount * np.max(actions1[x]) for x in range(self.action_size)]
 
                     states0 = np.concatenate((states0, np.reshape(state0, (1, Model.state_size))), axis=0)

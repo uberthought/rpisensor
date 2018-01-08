@@ -9,6 +9,7 @@ import random
 from Settings import Settings
 
 class Simulation:
+    outside = 20
     
     def __init__(self):
         self.t = 0
@@ -17,6 +18,7 @@ class Simulation:
         self.temperature = Settings.getTargetC()
         self.humidity = 50
         self.power = 0
+        self.insulation = 3
 
     def init():
         if os.path.exists('simulation.p'):
@@ -27,20 +29,20 @@ class Simulation:
         self.t += self.tdelta
 
         if self.power == 1:
-            self.temperature += 4 / 60
+            self.temperature += 5 / 60
         elif self.power == 2:
             self.temperature += 20 / 60
         if self.power == 3:
-            self.temperature -= 3 / 60
+            self.temperature -= 5 / 60
 
-        self.temperature -= (math.pow(self.temperature, 7) / math.pow(30, 7) * 30) / 60
+        self.temperature += ((Simulation.outside - self.temperature) / self.insulation) / 60
 
         pickle.dump(self, open("simulation.p", "wb"))
 
 
     def gather(self):
         timestamp = datetime.datetime.now()
-        return self.temperature, 50, timestamp
+        return self.temperature, 50, timestamp, Simulation.outside
 
     def setPower(self, power):
         self.power = power

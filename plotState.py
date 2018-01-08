@@ -25,7 +25,7 @@ max = target + 1
 experiencesFake = Experiences()
 experiencesFake.experiences = []
 for temperature in np.arange(min, max, .01):
-    experiencesFake.add2(temperature, .5, False, 0, target)
+    experiencesFake.add2(temperature, .5, False, 0, target, Simulation.outside)
 
 fooFake = experiences.get()
 temperaturesOff = []

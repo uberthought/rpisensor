@@ -8,22 +8,23 @@ from network import Model
 
 class Experience:
 
-    def __init__(self, temperature, humidity, power, timestamp, target, id):
+    def __init__(self, temperature, humidity, power, timestamp, target, outside, id):
         self.temperature = temperature
         self.humidity = humidity
         self.power = power
         self.timestamp = timestamp
         self.target = target
+        self.outside = outside
         self.id = id
 
     def getValue(temperature, target, power):
         value = 1 - math.fabs(temperature - target)
         if power == 3:
-            value -= 0.1
+            value -= 0.05
         if power == 2:
             value -= 0.3
         if power == 1:
-            value -= 0.01
+            value -= 0.05
         return value
 
 class TrainingExperience:
@@ -40,13 +41,13 @@ class Experiences:
             self.experiences = pickle.load(open("experiences.p", "rb"))
         self.id = random.random()
 
-    def add(self, temperature, humidity, power, timestamp, target):
-        experience = Experience(temperature, humidity, power, timestamp, target, self.id)
+    def add(self, temperature, humidity, power, timestamp, target, outside):
+        experience = Experience(temperature, humidity, power, timestamp, target, outside, self.id)
         self.experiences.append(experience)
         pickle.dump(self.experiences, open("experiences.p", "wb"))
 
-    def add2(self, temperature, humidity, power, timestamp, target):
-        experience = Experience(temperature, humidity, power, timestamp, target, self.id)
+    def add2(self, temperature, humidity, power, timestamp, target, outside):
+        experience = Experience(temperature, humidity, power, timestamp, target, outside, self.id)
         self.experiences.append(experience)
 
     def resetId(self):
@@ -60,6 +61,8 @@ class Experiences:
 
         experience0 = self.experiences[0]
         state1 = [experience0.temperature - experience0.target] * Model.state_size
+        state1[0] = experience0.target
+        state1[1] = experience0.outside
 
         value1 = Experience.getValue(experience0.temperature, experience0.target, experience0.power)
 
@@ -68,8 +71,10 @@ class Experiences:
             if experience0.id == experience1.id:
                 # state
                 state0 = state1[:]
-                del state1[0]
+                del state1[2]
                 state1.append(experience1.temperature - experience1.target)
+                state1[0] = experience1.target
+                state1[1] = experience1.outside
 
                 # action
                 action = np.zeros(Model.action_size)

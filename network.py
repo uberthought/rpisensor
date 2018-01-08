@@ -7,19 +7,19 @@ import time
 def createHidden(input_layer, units, name):
         input_units = int(input_layer.shape[1])
         with tf.name_scope(name):
-            weights = tf.Variable(tf.truncated_normal([input_units, units], stddev=1.0/math.sqrt(float(input_units))), name='weights')
-            biases = tf.Variable(tf.zeros([units]), name='biases')
+            weights = tf.Variable(tf.truncated_normal([input_units, units], stddev=1.0/math.sqrt(float(input_units)), dtype=tf.float32), name='weights')
+            biases = tf.Variable(tf.zeros([units], dtype=tf.float32), name='biases')
             return tf.nn.relu(tf.matmul(input_layer, weights) + biases)
 
 def createOutput(input_layer, units, name):
         input_units = int(input_layer.shape[1])
         with tf.name_scope(name):
-            weights = tf.Variable(tf.truncated_normal([input_units, units], stddev=1.0/math.sqrt(float(input_units))), name='weights')
-            biases = tf.Variable(tf.zeros([units]), name='biases')
+            weights = tf.Variable(tf.truncated_normal([input_units, units], stddev=1.0/math.sqrt(float(input_units)), dtype=tf.float32), name='weights')
+            biases = tf.Variable(tf.zeros([units], dtype=tf.float32), name='biases')
             return tf.matmul(input_layer, weights) + biases
 
 class Model:
-    state_size = 2
+    state_size = 4
     action_size = 4
 
     def __init__(self):

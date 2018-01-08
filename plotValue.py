@@ -5,9 +5,11 @@
 
 import matplotlib.pyplot as plt
 import numpy as np
+import math
 
 from network import Model
 from Experiences import Experience, Experiences
+from Simulation import Simulation
 
 model = Model()
 experiences = Experiences()
@@ -24,7 +26,7 @@ max = target + 1
 experiencesFake = Experiences()
 experiencesFake.experiences = []
 for temperature in np.arange(min, max, .01):
-    experiencesFake.add2(temperature, .5, False, 0, target)
+    experiencesFake.add2(temperature, .5, False, 0, target, Simulation.outside)
 
 fooFake = experiencesFake.get()[2:]
 temperatures = []
@@ -55,6 +57,9 @@ valuesAC = []
 for experience in fooFake:
     state0 = experience.state0
     value = experience.value
+
+    if math.fabs(state0[-1]) > 1 or state0[1] != Simulation.outside:
+        continue
 
     if experience.action[0] == 1:
         temperaturesOff.append(state0[-1])

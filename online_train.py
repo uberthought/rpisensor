@@ -26,7 +26,7 @@ experience = None
 
 while True:
 
-    if random.random() < 0.05:
+    if random.random() < 0.5:
         experience = None
 
     if (temperature - target) < -1.0:

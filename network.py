@@ -97,10 +97,17 @@ class Model:
         values = np.array([], dtype=np.float).reshape(0, 1)
 
         training_data = experiences.get()
+    
         if training_data is None:
             return math.inf
 
-        training_count = 500
+        training_count = len(training_data)
+        if training_count > 500:
+            training_count = 500
+        p = np.random.exponential(size=training_count)
+        p = np.sort(p)
+        p /= np.sum(p)
+
         training_experiences = np.random.choice(training_data, training_count)
 
         for experience in training_experiences:
@@ -122,14 +129,19 @@ class Model:
         return model_loss
 
     def dqn_train(self, experiences):
-        discount = 0.1
+        discount = 0.25
 
         states0 = np.array([], dtype=np.float).reshape(0, self.states0.shape[1])
         expected = np.array([], dtype=np.float).reshape(0, self.action_size)
 
         training_data = experiences.get()
+    
         if training_data is None:
             return math.inf
+    
+        training_count = len(training_data)
+        p = np.random.exponential(size=training_count)
+        p /= np.sum(p)
 
         start = time.time()
         while (time.time() - start) < 1:
@@ -137,7 +149,7 @@ class Model:
             expected = np.array([], dtype=np.float).reshape(0, self.action_size)
 
             for k in range(20):
-                experience = np.random.choice(training_data)
+                experience = np.random.choice(training_data, p=p)
 
                 state0 = experience.state0
                 state1 = experience.state1

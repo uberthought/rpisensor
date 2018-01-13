@@ -75,7 +75,7 @@ for experience in fooFake:
         valuesAC.append(value)
 
 
-fig, ax = plt.subplots(figsize=(20, 10))
+fig, ax = plt.subplots(figsize=(5, 3.5))
 ax.plot(temperatures, [x[0] for x in predicted], label='predicted off', color='blue')
 ax.plot(temperatures, [x[1] for x in predicted], label='predicted low', color='green')
 ax.plot(temperatures, [x[2] for x in predicted], label='predicted high', color='red')
@@ -85,11 +85,11 @@ ax.plot(temperaturesLow, valuesLow, '.', label='actual low', color='green')
 ax.plot(temperaturesHigh, valuesHigh, '.', label='actual high', color='red')
 ax.plot(temperaturesAC, valuesAC, '.', label='actual ac', color='orange')
 
-legend = ax.legend(loc='lower right')
-for label in legend.get_lines():
-    label.set_linewidth(2)
-for label in legend.get_texts():
-    label.set_fontsize('large')
+# legend = ax.legend(loc='lower right')
+# for label in legend.get_lines():
+#     label.set_linewidth(0.5)
+# for label in legend.get_texts():
+#     label.set_fontsize('xx-small')
 
 plt.savefig("plotValue.png")
 plt.show()

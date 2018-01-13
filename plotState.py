@@ -72,7 +72,7 @@ for experience in fooFake:
     temperatures.append(state0[-1])
     predicted.append(states1[:,-1])
 
-fig, ax = plt.subplots(figsize=(20, 10))
+fig, ax = plt.subplots(figsize=(5, 3.5))
 ax.plot(temperaturesOff, state1Off, '.', label='off', color='blue')
 ax.plot(temperaturesLow, state1Low, '.', label='low', color='green')
 ax.plot(temperaturesHigh, state1High, '.', label='high', color='red')
@@ -81,9 +81,9 @@ ax.plot(temperatures, [x[1] for x in predicted], label='predicted low', color='g
 ax.plot(temperatures, [x[2] for x in predicted], label='predicted high', color='red')
 ax.plot(temperatures, [x[3] for x in predicted], label='predicted ac', color='orange')
 
-legend = ax.legend(loc='lower right')
-for label in legend.get_texts():
-    label.set_fontsize('large')
+# legend = ax.legend(loc='lower right')
+# for label in legend.get_texts():
+#     label.set_fontsize('small')
 
 plt.savefig("plotState.png")
 plt.show()

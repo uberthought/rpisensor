@@ -38,18 +38,18 @@ for experience in fooFake:
     actions2.append(actions)
     triggers.append(np.argmax(actions) / 3)
 
-fig, ax = plt.subplots(figsize=(20, 10))
+fig, ax = plt.subplots(figsize=(5, 3.5))
 ax.plot(temperatures, [x[0] for x in actions2], label='off', color='blue')
 ax.plot(temperatures, [x[1] for x in actions2], label='low', color='green')
 ax.plot(temperatures, [x[2] for x in actions2], label='high', color='red')
 ax.plot(temperatures, [x[3] for x in actions2], label='ac', color='orange')
 ax.plot(temperatures, triggers, label='trigger', color='gray')
 
-legend = ax.legend(loc='lower right')
-for label in legend.get_lines():
-    label.set_linewidth(2)
-for label in legend.get_texts():
-    label.set_fontsize('large')
+# legend = ax.legend(loc='lower right')
+# for label in legend.get_lines():
+#     label.set_linewidth(0.5)
+# for label in legend.get_texts():
+#     label.set_fontsize('small')
 
 plt.savefig("plotQ.png")
 plt.show()

@@ -1,10 +1,13 @@
 #!/usr/bin/python3
 
-# import matplotlib
-# matplotlib.use('Agg')
+import matplotlib
+matplotlib.use('Agg')
 
 import matplotlib.pyplot as plt
 import numpy as np
+import os
+import time
+import shutil
 
 from network import Model
 from Experiences import Experience, Experiences
@@ -72,7 +75,7 @@ for experience in fooFake:
     temperatures.append(state0[-1])
     predicted.append(states1[:,-1])
 
-fig, ax = plt.subplots(figsize=(5, 3.5))
+fig, ax = plt.subplots(figsize=(7, 7))
 ax.plot(temperaturesOff, state1Off, '.', label='off', color='blue')
 ax.plot(temperaturesLow, state1Low, '.', label='low', color='green')
 ax.plot(temperaturesHigh, state1High, '.', label='high', color='red')
@@ -85,5 +88,10 @@ ax.plot(temperatures, [x[3] for x in predicted], label='predicted ac', color='or
 # for label in legend.get_texts():
 #     label.set_fontsize('small')
 
-plt.savefig("plotState.png")
+name = "state"
+if not os.path.exists("plots"):
+    os.makedirs("plots")
+plt.savefig("plots/"+name+".png")
 plt.show()
+timestr = time.strftime("%Y%m%d-%H%M%S")
+shutil.copyfile("plots/"+name+".png", "plots/"+name+"."+timestr+".png")

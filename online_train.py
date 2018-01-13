@@ -26,7 +26,7 @@ experience = None
 
 while True:
 
-    if random.random() < 0.5:
+    if random.random() < 0.2:
         experience = None
 
     if (temperature - target) < -1.0:
@@ -48,10 +48,10 @@ while True:
 
     model_loss = model.model_train(experiences)
     dqn_loss = model.dqn_train(experiences)
+    model.save()
 
     target = Settings.getTargetC()
-    model.save()
 
     value = Experience.getValue(temperature, target, action)
 
-    print(temperature, state, action, actions, value, model_loss, dqn_loss)
+    print(temperature, action, value, state)

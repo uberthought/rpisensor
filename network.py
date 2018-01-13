@@ -4,7 +4,6 @@ import os.path
 import math
 import time
 
-<<<<<<< HEAD
 def createHidden(input_layer, units, name):
         input_units = int(input_layer.shape[1])
         with tf.name_scope(name):
@@ -18,12 +17,6 @@ def createOutput(input_layer, units, name):
             weights = tf.Variable(tf.truncated_normal([input_units, units], stddev=1.0/math.sqrt(float(input_units)), dtype=tf.float32), name='weights')
             biases = tf.Variable(tf.zeros([units], dtype=tf.float32), name='biases')
             return tf.matmul(input_layer, weights) + biases
-=======
-def exponentialWeightedChoice(data, size):
-    p = np.random.exponential(size=len(data))
-    p = np.sort(p / np.sum(p))
-    return np.random.choice(data, size=size, p=p)
->>>>>>> master
 
 class Model:
     state_size = 4
@@ -31,7 +24,6 @@ class Model:
 
     def __init__(self):
 
-<<<<<<< HEAD
         self.states0 = tf.placeholder(tf.float32, shape=(None, Model.state_size), name='states0')
         self.actions = tf.placeholder(tf.float32, shape=(None, Model.action_size), name='actions')
         self.states1 = tf.placeholder(tf.float32, shape=(None, Model.state_size), name='states1')
@@ -59,49 +51,6 @@ class Model:
         dqn_hidden2 = createHidden(dqn_hidden1, units, 'dqn_hidden_2')
         dqn_hidden3 = createHidden(dqn_hidden2, units, 'dqn_hidden_3')
         self.dqn_prediction = createOutput(dqn_hidden3, Model.action_size, 'dqn_prediction')
-=======
-        self.states0 = tf.placeholder(tf.float32, shape=(None, self.state_size), name='states0')
-        self.actions = tf.placeholder(tf.float32, shape=(None, self.action_size), name='actions')
-        self.states1 = tf.placeholder(tf.float32, shape=(None, self.state_size), name='states1')
-        self.values = tf.placeholder(tf.float32, shape=(None, self.action_size), name='values')
-
-        self.regularizer_scale = tf.placeholder_with_default(0.0, [])
-
-        state_max = tf.get_variable("state_max", shape=(self.state_size), initializer=tf.constant_initializer(-math.inf))
-        states_max = tf.concat([self.states0, [state_max]], axis=0)
-        state_max = state_max.assign(tf.reduce_max(states_max, axis=0))
-
-        state_min = tf.get_variable("state_min", shape=(self.state_size), initializer=tf.constant_initializer(math.inf))
-        states_min = tf.concat([self.states0, [state_min]], axis=0)
-        state_min = state_min.assign(tf.reduce_min(states_min, axis=0))
-
-        diff = tf.subtract(state_max, state_min)
-        diff = tf.where(tf.equal(diff, 0.0), tf.ones_like(diff), diff)
-
-        normal_states0 = tf.divide(tf.subtract(self.states0, state_min), diff)
-
-        units = 64
-
-        regularizer = tf.contrib.layers.l1_regularizer(self.regularizer_scale)
-
-        model_input = tf.concat([normal_states0, self.actions], axis=1)
-
-        value_hidden0 = tf.layers.dense(inputs=model_input, units=units, activation=tf.nn.relu, kernel_regularizer=regularizer)
-        value_hidden1 = tf.layers.dense(inputs=value_hidden0, units=units, activation=tf.nn.relu, kernel_regularizer=regularizer)
-        self.value_prediction = tf.layers.dense(inputs=value_hidden1, units=1)
-        self.value_loss = tf.reduce_mean(tf.losses.mean_squared_error(self.values, self.value_prediction))
-        self.value_run_train = tf.train.AdagradOptimizer(.1).minimize(self.value_loss)
-
-        state_hidden0 = tf.layers.dense(inputs=model_input, units=units, activation=tf.nn.relu, kernel_regularizer=regularizer)
-        state_hidden1 = tf.layers.dense(inputs=state_hidden0, units=units, activation=tf.nn.relu, kernel_regularizer=regularizer)
-        self.state_prediction = tf.layers.dense(inputs=state_hidden1, units=self.state_size)
-        self.state_loss = tf.reduce_mean(tf.losses.mean_squared_error(self.states1, self.state_prediction))
-        self.state_run_train = tf.train.AdagradOptimizer(.1).minimize(self.state_loss)
-
-        dqn_hidden0 = tf.layers.dense(inputs=normal_states0, units=units, activation=tf.nn.relu, kernel_regularizer=regularizer)
-        dqn_hidden1 = tf.layers.dense(inputs=dqn_hidden0, units=units, activation=tf.nn.relu, kernel_regularizer=regularizer)
-        self.dqn_prediction = tf.layers.dense(inputs=dqn_hidden1, units=self.action_size)
->>>>>>> master
         self.dqn_expected = tf.placeholder(tf.float32, shape=(None, self.action_size))
         self.dqn_loss = tf.reduce_mean(tf.losses.mean_squared_error(self.dqn_expected, self.dqn_prediction))
         self.dqn_run_train = tf.train.AdagradOptimizer(.1).minimize(self.dqn_loss)
@@ -159,15 +108,7 @@ class Model:
         p = np.sort(p)
         p /= np.sum(p)
 
-<<<<<<< HEAD
         training_experiences = np.random.choice(training_data, training_count)
-=======
-        if len(training_data) <= 0:
-            return 0, 0
-
-        # training_experiences = np.random.choice(training_data, 500)
-        training_experiences = exponentialWeightedChoice(training_data, 500)
->>>>>>> master
 
         for experience in training_experiences:
             state0 = experience.state0
@@ -188,11 +129,7 @@ class Model:
         return model_loss
 
     def dqn_train(self, experiences):
-<<<<<<< HEAD
         discount = 0.25
-=======
-        discount = 0.8
->>>>>>> master
 
         states0 = np.array([], dtype=np.float).reshape(0, self.states0.shape[1])
         expected = np.array([], dtype=np.float).reshape(0, self.action_size)
@@ -214,13 +151,8 @@ class Model:
             states0 = np.array([], dtype=np.float).reshape(0, self.states0.shape[1])
             expected = np.array([], dtype=np.float).reshape(0, self.action_size)
 
-<<<<<<< HEAD
             for k in range(20):
                 experience = np.random.choice(training_data, p=p)
-=======
-            experience = exponentialWeightedChoice(training_data, 1)[0]
-            experience = np.random.choice(training_data)
->>>>>>> master
 
                 state0 = experience.state0
                 state1 = experience.state1
@@ -233,19 +165,12 @@ class Model:
                 states0 = np.concatenate((states0, np.reshape(state0, (1, Model.state_size))), axis=0)
                 expected = np.concatenate((expected, np.reshape(actions0, (1, self.action_size))), axis=0)
 
-<<<<<<< HEAD
                 for i in range(5):
                     states = [state0] * self.action_size
                     actions = np.zeros((self.action_size, self.action_size))
                     for j in range(self.action_size):
                         actions[j][j] = 1
                     states1, values = self.model_run(states, actions)
-=======
-            for i in range(50):
-                states = [state0] * self.action_size
-                actions = np.arange(self.action_size).reshape((self.action_size, 1))
-                states1, values = self.model_run(states, actions)
->>>>>>> master
 
                     actions1 = self.dqn_run(states1)
                     action = [self.dqn_run_action(states)]

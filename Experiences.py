@@ -88,28 +88,12 @@ class Experiences:
                 # value
                 value1 = Experience.getValue(experience1.temperature, experience1.target, experience1.power)
 
-<<<<<<< HEAD
                 result.append(TrainingExperience(state0, state1, action, value1))
             else:
                 state1 = [experience1.temperature - experience1.target] * Model.state_size
                 state0 = state1[:]
 
             experience0 = experience1
-=======
-            # action
-            if experience1.solenoid == 0:
-                action = 0
-            elif experience1.solenoid == 1:
-                action = 1
-            else:
-                action = 2
-
-            # value
-            value1 = Experience.getValue(experience1.temperature, experience1.target)
-
-            if state0[0] == state1[0] and state0[0] != state0[1] and state0[1] != state0[2] and state1[0] != state1[1] and state1[1] != state1[2]:
-                result.append(TrainingExperience(state0, state1, action, value1))
->>>>>>> master
 
             
         return result

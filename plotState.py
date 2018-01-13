@@ -48,21 +48,12 @@ for experience in fooFake:
     actions = [action]
     states1, values = model.model_run(states0, actions)
 
-<<<<<<< HEAD
     if action[0] == 1:
         temperaturesOff.append(state0[-1])
         state1Off.append(state1[-1])
     elif action[1] == 1:
         temperaturesLow.append(state0[-1])
         state1Low.append(state1[-1])
-=======
-    # print(state0)
-    # print(state1)
-
-    if action[0] == 0:
-        temperaturesOff.append(experiences.stateToTemperature(state0))
-        state1Off.append(experiences.stateToTemperature(state1))
->>>>>>> master
     else:
         temperaturesHigh.append(state0[-1])
         state1High.append(state1[-1])
@@ -76,15 +67,10 @@ for experience in fooFake:
 
     temperature0 = experience.state0[-1]
 
-<<<<<<< HEAD
     states0 = [state0] * Model.action_size
     actions = np.zeros((Model.action_size, Model.action_size))
     for j in range(Model.action_size):
         actions[j][j] = 1
-=======
-    states0 = [state0] * 3
-    actions = np.arange(3).reshape((3, 1))
->>>>>>> master
     states1, values = model.model_run(states0, actions)
 
     temperatures.append(state0[-1])

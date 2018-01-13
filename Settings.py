@@ -1,5 +1,6 @@
 import pickle
 import os.path
+import random
 
 def toF(c):
     return float(c) * 9 / 5 + 32
@@ -9,7 +10,12 @@ def toC(f):
 
 class Settings:
     def __init__(self):
+<<<<<<< HEAD
         self.target = 22
+=======
+        # self.target = toC(random.random() * (78 - 67) + 67)
+        self.target = toC(75)
+>>>>>>> master
         self.on = True
         # self.load()
     

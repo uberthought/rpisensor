@@ -19,6 +19,13 @@ experiences = Experiences()
 model = Model()
 
 target = Settings.getTargetC()
+<<<<<<< HEAD
+=======
+temperature, humidity, timestamp = sensor.gather()
+experiences.add(temperature, humidity, solenoid.on, timestamp, target)
+experiences.add(temperature, humidity, solenoid.on, timestamp, target)
+experience = None
+>>>>>>> master
 state = []
 actions = []
 action = 0
@@ -27,8 +34,11 @@ experience = None
 while True:
 
     if experience is None:
+<<<<<<< HEAD
         action = np.random.choice(Model.action_size, 1)[0]
     else:
+=======
+>>>>>>> master
         state = experience.state0
         action = model.dqn_run_action([state])
 
@@ -36,7 +46,12 @@ while True:
 
     simulation.step()
     temperature, humidity, timestamp = sensor.gather()
+<<<<<<< HEAD
     experiences.add(temperature, humidity, solenoid.power, timestamp, target)
+=======
+
+    experiences.add(temperature, humidity, solenoid.isOn(), timestamp, target)
+>>>>>>> master
     experience = experiences.getLast()
 
     target = Settings.getTargetC()

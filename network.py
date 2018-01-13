@@ -126,14 +126,15 @@ class Model:
             values = np.concatenate((values, np.reshape(value, (1, 1))), axis=0)
 
         feed_dict = {self.states0: states0, self.actions: actions, self.states1: states1, self.values: values}
-        start = time.time()
-        while (time.time() - start) < 1:
+        # start = time.time()
+        for i in range(100):
             model_loss, _, summary = self.sess.run([self.model_loss, self.model_run_train, self.model_summary], feed_dict=feed_dict)
             self.summary_writer.add_summary(summary)
+        # print(time.time() - start)
         return model_loss
 
     def dqn_train(self, experiences):
-        discount = 0.0
+        discount = 0.5
 
         states0 = np.array([], dtype=np.float).reshape(0, self.states0.shape[1])
         expected = np.array([], dtype=np.float).reshape(0, self.action_size)
@@ -185,9 +186,10 @@ class Model:
         feed_dict = {self.states0: states0, self.dqn_expected: expected}
         loss, _ = self.sess.run([self.dqn_loss, self.dqn_run_train], feed_dict=feed_dict)
 
-        start = time.time()
-        while (time.time() - start) < 1:
+        # start = time.time()
+        for i in range(100):
             loss, _, summary = self.sess.run([self.dqn_loss, self.dqn_run_train, self.dqn_summary], feed_dict=feed_dict)
             self.summary_writer.add_summary(summary)
+        # print(time.time() - start)
 
         return loss

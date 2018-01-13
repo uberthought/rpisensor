@@ -9,7 +9,7 @@ import random
 from Settings import Settings
 
 class Simulation:
-    outside = 20
+    outside = 30
     
     def __init__(self):
         self.t = 0
@@ -29,11 +29,11 @@ class Simulation:
         self.t += self.tdelta
 
         if self.power == 1:
-            self.temperature += 5 / 60
+            self.temperature += 7 / 60
         elif self.power == 2:
             self.temperature += 20 / 60
         if self.power == 3:
-            self.temperature -= 5 / 60
+            self.temperature -= 7 / 60
 
         self.temperature += ((Simulation.outside - self.temperature) / self.insulation) / 60
 

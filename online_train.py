@@ -29,12 +29,18 @@ while True:
     if random.random() < 0.2:
         experience = None
 
+    force=False
+    explore=False
+
     if (temperature - target) < -1.0:
         action = 2
+        force=True
     elif (temperature - target) > 1.0:
         action = 3
+        force=True
     elif experience is None:
         action = np.random.choice(Model.action_size, 1)[0]
+        explore=True
     else:
         state = experience.state0
         action = model.dqn_run_action([state])
@@ -54,4 +60,13 @@ while True:
 
     value = Experience.getValue(temperature, target, action)
 
-    print(temperature, action, value, state)
+    if force:
+        action_type='f'
+    elif explore:
+        action_type='e'
+    else:
+        action_type=' '
+
+    print(temperature, str(action)+action_type, value, state)
+
+    time.sleep(2)

@@ -6,6 +6,11 @@ import random
 
 from network import Model
 
+def normalize_temperature(temperature):
+    max = 30
+    min = 0
+    return (temperature - min) / (max - min)
+
 class Experience:
 
     def __init__(self, temperature, humidity, power, timestamp, target, outside, id):
@@ -61,8 +66,8 @@ class Experiences:
 
         experience0 = self.experiences[0]
         state1 = [experience0.temperature - experience0.target] * Model.state_size
-        state1[0] = experience0.target
-        state1[1] = experience0.outside
+        state1[0] = normalize_temperature(experience0.target)
+        state1[1] = normalize_temperature(experience0.outside)
 
         value1 = Experience.getValue(experience0.temperature, experience0.target, experience0.power)
 
@@ -73,8 +78,8 @@ class Experiences:
                 state0 = state1[:]
                 del state1[2]
                 state1.append(experience1.temperature - experience1.target)
-                state1[0] = experience1.target
-                state1[1] = experience1.outside
+                state1[0] = normalize_temperature(experience1.target)
+                state1[1] = normalize_temperature(experience1.outside)
 
                 # action
                 action = np.zeros(Model.action_size)

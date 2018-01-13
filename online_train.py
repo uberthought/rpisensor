@@ -23,6 +23,7 @@ state = []
 actions = []
 action = 0
 experience = None
+start = time.time()
 
 while True:
 
@@ -67,6 +68,9 @@ while True:
     else:
         action_type=' '
 
-    print(temperature, str(action)+action_type, value, state)
+    last = start
+    start = time.time()
+    print("{0:0.2f}".format(temperature), str(action)+action_type, "{0:0.2f}".format(value), "{0:0.2f}".format(start-last), state)
+    # print ["{0:0.2f}".format(i) for i in a]
 
-    time.sleep(2)
+    # time.sleep(5)

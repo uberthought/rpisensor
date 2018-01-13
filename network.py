@@ -127,7 +127,7 @@ class Model:
 
         feed_dict = {self.states0: states0, self.actions: actions, self.states1: states1, self.values: values}
         # start = time.time()
-        for i in range(100):
+        for i in range(200):
             model_loss, _, summary = self.sess.run([self.model_loss, self.model_run_train, self.model_summary], feed_dict=feed_dict)
             self.summary_writer.add_summary(summary)
         # print(time.time() - start)

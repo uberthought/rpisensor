@@ -61,8 +61,8 @@ for experience in fooFake:
     state0 = experience.state0
     value = experience.value
 
-    if math.fabs(state0[-1]) > 1 or state0[1] != Simulation.outside:
-        continue
+    # if math.fabs(state0[-1]) > 1 or state0[1] != Simulation.outside:
+    #     continue
 
     if experience.action[0] == 1:
         temperaturesOff.append(state0[-1])

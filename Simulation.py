@@ -9,7 +9,7 @@ import random
 from Settings import Settings
 
 class Simulation:
-    outside = 30
+    outside = 15
     
     def __init__(self):
         self.t = 0

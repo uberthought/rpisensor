@@ -10,11 +10,7 @@ from network import Model
 from Experiences import Experience, Experiences
 from Simulation import Simulation
 
-<<<<<<< HEAD
 model = Model()
-=======
-model = Model(3, 3)
->>>>>>> master
 experiences = Experiences()
 
 print('experiences ', len(experiences.experiences))

@@ -4,7 +4,7 @@ from Simulation import Simulation
 # from Sensor import Sensor
 # from Solenoid import Solenoid
 from network import Model
-from Experiences import Experience, Experiences
+from Experiences import Experiences
 from Settings import Settings
 
 import time
@@ -18,29 +18,49 @@ sensor = solenoid = simulation = Simulation.init()
 experiences = Experiences()
 model = Model()
 
-target = Settings.getTargetC()
-state = []
+temperature = target = Settings.getTargetC()
+state0 = None
 actions = []
 action = 0
-experience = None
+start = time.time()
 
 while True:
 
-    if experience is None:
+    if random.random() < 0.2:
+        state0 = None
+
+    force=False
+    explore=False
+
+    if (temperature - target) < -1.0:
+        action = 2
+        force=True
+    elif (temperature - target) > 1.0:
+        action = 3
+        force=True
+    elif state0 is None:
         action = np.random.choice(Model.action_size, 1)[0]
+        explore=True
     else:
-        state = experience.state0
-        action = model.dqn_run_action([state])
+        action = model.dqn_run_action([state0])
 
     solenoid.setPower(action)
 
     simulation.step()
-    temperature, humidity, timestamp = sensor.gather()
-    experiences.add(temperature, humidity, solenoid.power, timestamp, target)
-    experience = experiences.getLast()
+    temperature, humidity, timestamp, outside = sensor.gather()
+    experiences.add(temperature, humidity, solenoid.power, timestamp, target, outside)
+    state0, _, value, _ = experiences.last()
 
     target = Settings.getTargetC()
 
-    value = Experience.getValue(temperature, target, action)
+    if force:
+        action_type='f'
+    elif explore:
+        action_type='e'
+    else:
+        action_type=' '
 
-    print(temperature, state, action, actions, value)
+    last = start
+    start = time.time()
+    if value != None:
+        print("{0:0.2f}".format(temperature), str(action)+action_type, "{0:0.2f}".format(value), "{0:0.2f}".format(start-last), state0)

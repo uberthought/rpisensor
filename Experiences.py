@@ -12,95 +12,81 @@ def normalize_temperature(temperature):
     # return (temperature - min) / (max - min)
     return temperature - 22
 
-class Experience:
-
-    def __init__(self, temperature, humidity, power, timestamp, target, outside, id):
-        self.temperature = temperature
-        self.humidity = humidity
-        self.power = power
-        self.timestamp = timestamp
-        self.target = target
-        self.outside = outside
-        self.id = id
-
-    def getValue(temperature, target, power):
-        value = 1 - math.fabs(temperature - target)
-        if power == 3:
-            value -= 0.05
-        if power == 2:
-            value -= 0.3
-        if power == 1:
-            value -= 0.05
-        return value
-
-class TrainingExperience:
-    def __init__(self, state0, state1, action, value):
-        self.state0 = state0[:]
-        self.state1 = state1[:]
-        self.action = action[:]
-        self.value = value
+def getValue(temperature, target, power):
+    value = 1 - math.fabs(temperature - target)
+    if power == 3:
+        value -= 0.05
+    if power == 2:
+        value -= 0.3
+    if power == 1:
+        value -= 0.05
+    return value
 
 class Experiences:
     def __init__(self):
-        self.experiences = []
         if os.path.exists('experiences.p'):
-            self.experiences = pickle.load(open("experiences.p", "rb"))
-        self.id = random.random()
+            [self.states0, self.actions, self.values, self.states1] = pickle.load(open("experiences.p", "rb"))
+            self.appendFake()
+        else:
+            self.reset()
+
+    def reset(self):
+        self.states0 = np.array([], dtype=np.float).reshape(0, Model.state_size)
+        self.actions = np.array([], dtype=np.float).reshape(0, Model.action_size)
+        self.states1 = np.array([], dtype=np.float).reshape(0, Model.state_size)
+        self.values = np.array([], dtype=np.float).reshape(0, 1)
+        self.appendFake()
+
+    def appendFake(self):
+        state = np.full(Model.state_size, math.inf)
+        action = np.full(Model.action_size, math.inf)
+        value = np.full(1, math.inf)
+        self.states0 = np.concatenate((self.states0, [state]), axis=0)
+        self.actions = np.concatenate((self.actions, [action]), axis=0)
+        self.states1 = np.concatenate((self.states1, [state]), axis=0)
+        self.values = np.concatenate((self.values, [value]), axis=0)
 
     def add(self, temperature, humidity, power, timestamp, target, outside):
-        experience = Experience(temperature, humidity, power, timestamp, target, outside, self.id)
-        self.experiences.append(experience)
-        pickle.dump(self.experiences, open("experiences.p", "wb"))
+        self.add2(temperature, humidity, power, timestamp, target, outside)
+        pickle.dump([self.states0, self.actions, self.values, self.states1], open("experiences.p", "wb"))
 
     def add2(self, temperature, humidity, power, timestamp, target, outside):
-        experience = Experience(temperature, humidity, power, timestamp, target, outside, self.id)
-        self.experiences.append(experience)
-
-    def resetId(self):
-        self.id = random.random()
+        state0 = self.states1[-1]
+        state1 = np.array([normalize_temperature(target), normalize_temperature(outside), state0[3], normalize_temperature(temperature)])
+        action = np.zeros(Model.action_size)
+        action[power] = 1
+        value = np.full(1, getValue(temperature, target, power))
+        
+        self.states0 = np.concatenate((self.states0, [state0]), axis=0)
+        self.actions = np.concatenate((self.actions, [action]), axis=0)
+        self.states1 = np.concatenate((self.states1, [state1]), axis=0)
+        self.values = np.concatenate((self.values, [value]), axis=0)
 
     def get(self):
-        if len(self.experiences) < 2:
-            return None
 
-        result = []
+        states0 = np.array([], dtype=np.float).reshape(0, Model.state_size)
+        actions = np.array([], dtype=np.float).reshape(0, Model.action_size)
+        states1 = np.array([], dtype=np.float).reshape(0, Model.state_size)
+        values = np.array([], dtype=np.float).reshape(0, 1)
 
-        experience0 = self.experiences[0]
-        state1 = [normalize_temperature(experience0.temperature)] * Model.state_size
-        state1[0] = normalize_temperature(experience0.target)
-        state1[1] = normalize_temperature(experience0.outside)
-
-        value1 = Experience.getValue(experience0.temperature, experience0.target, experience0.power)
-
-        for experience1 in self.experiences:
-
-            if experience0.id == experience1.id:
-                # state
-                state0 = state1[:]
-                del state1[2]
-                state1.append(normalize_temperature(experience1.temperature))
-                state1[0] = normalize_temperature(experience1.target)
-                state1[1] = normalize_temperature(experience1.outside)
-
-                # action
-                action = np.zeros(Model.action_size)
-                action[experience1.power] = 1
-
-                # value
-                value1 = Experience.getValue(experience1.temperature, experience1.target, experience1.power)
-
-                result.append(TrainingExperience(state0, state1, action, value1))
-            else:
-                state1 = [experience1.temperature - experience1.target] * Model.state_size
-                state0 = state1[:]
-
-            experience0 = experience1
-
+        for i in range(len(self.states0)):
+            state0 = self.states0[i]
+            state1 = self.states1[i]
+            action = self.actions[i]
+            value = self.values[i]
+            if np.any(state0 == math.inf) or np.any(state1 == math.inf):
+                continue
+            if np.any(action == math.inf) or np.any(value == math.inf):
+                continue
+            states0 = np.concatenate((states0, [state0]), axis=0)
+            actions = np.concatenate((actions, [action]), axis=0)
+            states1 = np.concatenate((states1, [state1]), axis=0)
+            values = np.concatenate((values, [value]), axis=0)
             
-        return result
+        return states0, actions, values, states1
 
-    def getLast(self):
-        foo = self.get()
-        if foo is not None:
-            return foo[-1]
-        return None
+    def last(self):
+        state0, action, value, state1 = self.get()
+        if len(state0) > 0:
+            return state0[-1], action[-1], value[-1][0], state1[-1]
+        return None, None, None, None

@@ -11,43 +11,38 @@ import time
 import shutil
 
 from network import Model
-from Experiences import Experience, Experiences
+from Experiences import Experiences
 from Simulation import Simulation
+from Settings import Settings
 
 model = Model()
 experiences = Experiences()
+settings = Settings()
 
-print('experiences ', len(experiences.experiences))
-
-target = experiences.experiences[-1].target
-# temperatures = [x.temperature for x in experiences.experiences]
-# min = np.min(temperatures)
-# max = np.max(temperatures)
+target = settings.target
 min = target - 1
 max = target + 1
 
 experiencesFake = Experiences()
-experiencesFake.experiences = []
+experiencesFake.reset()
 for temperature in np.arange(min, max, .01):
     experiencesFake.add2(temperature, .5, False, 0, target, Simulation.outside)
 
-fooFake = experiencesFake.get()[2:]
+states0, actions, values, states1 = experiencesFake.get()
 temperatures = []
 predicted = []
 
-for experience in fooFake:
-    state0 = experience.state0
-
+for state0 in states0:
     states0 = [state0] * Model.action_size
     actions = np.zeros((Model.action_size, Model.action_size))
     for j in range(Model.action_size):
         actions[j][j] = 1
     states1, values = model.model_run(states0, actions)
 
-    temperatures.append(experience.state0[-1])
+    temperatures.append(state0[-1])
     predicted.append(values[:,0])
 
-fooFake = experiences.get()
+states0, actions, values, states1 = experiences.get()
 temperaturesOff = []
 valuesOff = []
 temperaturesLow = []
@@ -57,23 +52,24 @@ valuesHigh = []
 temperaturesAC = []
 valuesAC = []
 
-for experience in fooFake:
-    state0 = experience.state0
-    value = experience.value
+for i in range(len(values)):
+    state0 = states0[i]
+    value = values[i]
+    action = actions[i]
 
     # if math.fabs(state0[-1]) > 1 or state0[1] != Simulation.outside:
     #     continue
 
-    if experience.action[0] == 1:
+    if action[0] == 1:
         temperaturesOff.append(state0[-1])
         valuesOff.append(value)
-    elif experience.action[1] == 1:
+    elif action[1] == 1:
         temperaturesLow.append(state0[-1])
         valuesLow.append(value)
-    elif experience.action[2] == 1:
+    elif action[2] == 1:
         temperaturesHigh.append(state0[-1])
         valuesHigh.append(value)
-    elif experience.action[3] == 1:
+    elif action[3] == 1:
         temperaturesAC.append(state0[-1])
         valuesAC.append(value)
 

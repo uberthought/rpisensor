@@ -7,7 +7,7 @@ import numpy as np
 model = Model()
 experiences = Experiences()
 
-print('experiences ', len(experiences.get()))
+print('experiences ', len(experiences.get()[0]))
 
 for i in range(10):
     model_loss = model.model_train(experiences)

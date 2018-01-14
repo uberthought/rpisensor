@@ -10,7 +10,8 @@ def normalize_temperature(temperature):
     # max = 30
     # min = 0
     # return (temperature - min) / (max - min)
-    return temperature - 22
+    # return temperature - 22
+    return (temperature - 15) / 100
 
 def getValue(temperature, target, power):
     value = 1 - math.fabs(temperature - target)
@@ -52,7 +53,7 @@ class Experiences:
 
     def add2(self, temperature, humidity, power, timestamp, target, outside):
         state0 = self.states1[-1]
-        state1 = np.array([normalize_temperature(target), normalize_temperature(outside), state0[3], normalize_temperature(temperature)])
+        state1 = np.array([normalize_temperature(target), normalize_temperature(outside), state0[3], temperature - target])
         action = np.zeros(Model.action_size)
         action[power] = 1
         value = np.full(1, getValue(temperature, target, power))

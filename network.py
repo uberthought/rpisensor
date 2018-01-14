@@ -94,20 +94,26 @@ class Model:
     def dqn_run_action(self, states):
         return self.sess.run(self.dqn_action, feed_dict={self.states0: states})[0]
 
-    def model_train(self, experiences):
+    def model_train(self, experiences, online):
         states0, actions, values, states1 = experiences.get()
 
         size = len(states0)
         if size == 0:
             return math.inf
-        if size > 500:
-            size = 500
 
-        p = np.random.exponential(size=size)
+        training_size = size
+        if online:
+            if training_size > 100:
+                training_size = 100
+            p = np.random.exponential(size=size)
+        else:
+            if training_size > 1000:
+                training_size = 1000
+            p = np.random.random(size=size)
         p = np.sort(p)
         p /= np.sum(p)
 
-        i = np.random.choice(range(size), size, p=p)
+        i = np.random.choice(range(size), training_size, p=p)
         states0 = states0[i]
         actions = actions[i]
         values = values[i]
@@ -121,26 +127,31 @@ class Model:
         # print(time.time() - start)
         return model_loss
 
-    def dqn_train(self, experiences):
+    def dqn_train(self, experiences, online):
         discount = 0.5
-
-        states0 = np.array([], dtype=np.float).reshape(0, self.states0.shape[1])
-        expected = np.array([], dtype=np.float).reshape(0, self.action_size)
 
         states0, actions, values, states1 = experiences.get()
     
         size = len(states0)
         if size == 0:
             return math.inf
+        training_size = size
 
-        p = np.random.exponential(size=size)
+        if online:
+            if training_size > 20:
+                training_size = 20
+            p = np.random.exponential(size=size)
+        else:
+            if training_size > 100:
+                training_size = 100
+            p = np.random.random(size=size)
         p = np.sort(p)
         p /= np.sum(p)
 
         X = np.array([], dtype=np.float).reshape(0, self.states0.shape[1])
         Y = np.array([], dtype=np.float).reshape(0, self.action_size)
 
-        for k in range(20):
+        for k in range(training_size):
             i = np.random.choice(range(size), p=p)
             state0 = states0[i]
             value = values[i]
@@ -153,7 +164,7 @@ class Model:
             Y = np.concatenate((Y, np.reshape(actions0, (1, self.action_size))), axis=0)
 
             hstate0 = state0
-            for i in range(2):
+            for i in range(4):
                 hstates0 = [hstate0] * self.action_size
                 hactions = np.zeros((self.action_size, self.action_size))
                 for j in range(self.action_size):

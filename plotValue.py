@@ -11,7 +11,7 @@ import time
 import shutil
 
 from network import Model
-from Experiences import Experiences
+from Experiences import Experiences, normalize_temperature
 from Simulation import Simulation
 from Settings import Settings
 
@@ -57,8 +57,16 @@ for i in range(len(values)):
     value = values[i]
     action = actions[i]
 
-    # if math.fabs(state0[-1]) > 1 or state0[1] != Simulation.outside:
-    #     continue
+    if state0[0] != normalize_temperature(target):
+        continue
+
+    if state0[1] != normalize_temperature(Simulation.outside):
+        continue
+
+    if state0[3] - normalize_temperature(target) > 1:
+        continue
+    if state0[3] - normalize_temperature(target) < -1:
+        continue
 
     if action[0] == 1:
         temperaturesOff.append(state0[-1])

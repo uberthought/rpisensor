@@ -51,8 +51,8 @@ while True:
     experiences.add(temperature, humidity, solenoid.power, timestamp, target, outside)
     state0, _, value, _ = experiences.last()
 
-    model_loss = model.model_train(experiences)
-    dqn_loss = model.dqn_train(experiences)
+    model_loss = model.model_train(experiences, True)
+    dqn_loss = model.dqn_train(experiences, True)
     model.save()
 
     target = Settings.getTargetC()

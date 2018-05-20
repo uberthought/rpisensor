@@ -13,6 +13,7 @@ class Settings:
         self.target = 24
         self.on = True
         self.gathering = True
+        self.training = False
         self.load()
     
     def load(self):
@@ -21,6 +22,7 @@ class Settings:
             self.target = settings.target
             self.on = settings.on
             self.gathering = settings.gathering
+            self.training = settings.training
 
     def save(self):
         pickle.dump(self, open("settings.p", "wb"))
@@ -42,6 +44,15 @@ class Settings:
     def getGathering():
         settings.load()
         return settings.gathering
+
+    def setTraining(training):
+        settings.load()
+        settings.training = training
+        settings.save()
+
+    def getTraining():
+        settings.load()
+        return settings.training
 
     def setTargetF(target): 
         settings.load()

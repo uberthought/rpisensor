@@ -34,6 +34,8 @@ class WebServer(BaseHTTPRequestHandler):
 
         if b'gathering' in postvars.keys():
             self.gatheringButton()
+        if b'training' in postvars.keys():
+            self.trainingButton()
         if b'warmer' in postvars.keys():
             self.warmerButton()
         if b'cooler' in postvars.keys():
@@ -62,6 +64,11 @@ class WebServer(BaseHTTPRequestHandler):
         else:
             self.wfile.write(bytes('document.getElementById("gathering").value ="Start Gathering";', 'utf-8'))
     
+        if Settings.getTraining():
+            self.wfile.write(bytes('document.getElementById("training").value ="Stop Training";', 'utf-8'))
+        else:
+            self.wfile.write(bytes('document.getElementById("training").value ="Start Training";', 'utf-8'))
+    
         if Settings.getOn():
             self.wfile.write(bytes('document.getElementById("power").value ="Turn Off";', 'utf-8'))
         else:
@@ -79,14 +86,16 @@ class WebServer(BaseHTTPRequestHandler):
 
     def powerButton(self):
         Settings.setOn(not Settings.getOn())
-        if not Settings.getOn():
-            solenoid = Solenoid()
-            solenoid.switchOff()
-
+        solenoid = Solenoid()
+        solenoid.switchOff()
         self.showRoot(self.getState())
 
     def gatheringButton(self):
         Settings.setGathering(not Settings.getGathering())
+        self.showRoot(self.getState())
+
+    def trainingButton(self):
+        Settings.setTraining(not Settings.getTraining())
         self.showRoot(self.getState())
 
     def getState(self):
@@ -124,6 +133,17 @@ webServerThread.start()
 trainer = OnlineTrainer()
 
 while True:
-    if Settings.getGathering():
-        trainer.run_once()
-    time.sleep(1)
+    start = time.time()
+
+    if Settings.getOn():
+
+        if Settings.getGathering():
+            trainer.run_once()
+
+        if Settings.getTraining():
+            trainer.train_once()
+
+    elapse = time.time() - start
+
+    if elapse < 15:
+        time.sleep(15 - elapse)

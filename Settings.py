@@ -12,13 +12,15 @@ class Settings:
     def __init__(self):
         self.target = 24
         self.on = True
-        # self.load()
+        self.gathering = True
+        self.load()
     
     def load(self):
         if os.path.exists('settings.p'):
             settings = pickle.load(open("settings.p", "rb"))
             self.target = settings.target
             self.on = settings.on
+            self.gathering = settings.gathering
 
     def save(self):
         pickle.dump(self, open("settings.p", "wb"))
@@ -31,6 +33,15 @@ class Settings:
     def getOn():
         settings.load()
         return settings.on
+
+    def setGathering(gathering):
+        settings.load()
+        settings.gathering = gathering
+        settings.save()
+
+    def getGathering():
+        settings.load()
+        return settings.gathering
 
     def setTargetF(target): 
         settings.load()

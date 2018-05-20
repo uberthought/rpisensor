@@ -15,8 +15,6 @@ from online_train import OnlineTrainer
 hostName = ''
 hostPort = 80
 
-trainer = OnlineTrainer()
-
 class WebServer(BaseHTTPRequestHandler):
 
     def do_GET(self):
@@ -86,13 +84,11 @@ class WebServer(BaseHTTPRequestHandler):
         self.showRoot(self.getState())
 
     def startButton(self):
-        print('start')
-        trainer.run_once()
-
+        Settings.setGathering(True);
         self.showRoot(self.getState())
 
     def stopButton(self):
-        print('stop')
+        Settings.setGathering(False);
         self.showRoot(self.getState())
 
     def getState(self):
@@ -121,12 +117,23 @@ class WebServer(BaseHTTPRequestHandler):
 
         webServer.server_close()
 
-def worker(id):
-    while True:
+    def run(id):
+
+        webServer = HTTPServer((hostName, hostPort), WebServer)
+
+        try:
+            webServer.serve_forever()
+        except KeyboardInterrupt:
+            pass
+
+        webServer.server_close()
+
+webServerThread = Thread(target=WebServer.run, args=[0])
+webServerThread.start()
+
+trainer = OnlineTrainer()
+
+while True:
+    if Settings.getGathering():
         trainer.run_once()
-        time.sleep(1)
-
-main = Thread(target=worker, args=[0])
-main.start()
-
-WebServer.run()
+    time.sleep(1)

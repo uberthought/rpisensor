@@ -1,7 +1,5 @@
 #!/usr/bin/python3
 
-from threading import Thread
-
 from Sensor import Sensor
 from Solenoid import Solenoid
 from network import Model

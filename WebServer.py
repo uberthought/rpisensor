@@ -1,5 +1,6 @@
 #!/usr/bin/python3
 
+from threading import Thread
 from http.server import BaseHTTPRequestHandler, HTTPServer
 import time
 import cgi
@@ -9,11 +10,14 @@ from Settings import Settings
 from Sensor import Sensor
 from Solenoid import Solenoid
 
+from online_train import OnlineTrainer
+
 hostName = ''
 hostPort = 80
 
-class WebServer(BaseHTTPRequestHandler):
+trainer = OnlineTrainer()
 
+class WebServer(BaseHTTPRequestHandler):
 
     def do_GET(self):
 
@@ -32,6 +36,11 @@ class WebServer(BaseHTTPRequestHandler):
             postvars = {}
 
         print(postvars)
+
+        if b'start' in postvars.keys():
+            self.startButton()
+        if b'stop' in postvars.keys():
+            self.stopButton()
 
         if b'warmer' in postvars.keys():
             self.warmerButton()
@@ -70,16 +79,26 @@ class WebServer(BaseHTTPRequestHandler):
     def powerButton(self):
         Settings.setOn(not Settings.getOn())
         if not Settings.getOn():
-            solenoid = sensor = simulation = Simulation.init()
-            # solenoid = Solenoid()
+            # solenoid = sensor = simulation = Simulation.init()
+            solenoid = Solenoid()
             solenoid.switchOff()
 
+        self.showRoot(self.getState())
+
+    def startButton(self):
+        print('start')
+        trainer.run_once()
+
+        self.showRoot(self.getState())
+
+    def stopButton(self):
+        print('stop')
         self.showRoot(self.getState())
 
     def getState(self):
         sensor = Sensor()
         solenoid = Solenoid()
-        temperature, _, _ = sensor.gather()
+        temperature, _, _, _ = sensor.gather()
         f = temperature * 9 / 5 + 32
         f = math.floor(f * 10) / 10
         message = 'Current temperature is ' + str(f)
@@ -101,3 +120,13 @@ class WebServer(BaseHTTPRequestHandler):
             pass
 
         webServer.server_close()
+
+def worker(id):
+    while True:
+        trainer.run_once()
+        time.sleep(1)
+
+main = Thread(target=worker, args=[0])
+main.start()
+
+WebServer.run()

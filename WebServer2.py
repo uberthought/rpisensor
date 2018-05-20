@@ -74,9 +74,18 @@ class WebServer(BaseHTTPRequestHandler):
 
     def getState(self):
         experiences = Experiences()
-        experience = experiences.experiences[-1]
-        temperature = experience.temperature
-        isOn = experience.solenoid
+
+        state0, action, value, state1 = experiences.last()
+
+        print('state0', state0)
+        print('action', action)
+        print('value', value)
+        print('state1', state1)
+
+        experience = experiences.last()
+
+        temperature = Experiences.denormalize_temperature(state0[-1])
+        isOn = experience[1]
 
         f = temperature * 9 / 5 + 32
         f = math.floor(f * 10) / 10

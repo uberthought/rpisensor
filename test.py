@@ -51,6 +51,9 @@ while True:
     experiences.add(temperature, humidity, solenoid.power, timestamp, target, outside)
     state0, _, value, _ = experiences.last()
 
+    print('state0', state0)
+    print('value', value)
+
     target = Settings.getTargetC()
 
     if force:

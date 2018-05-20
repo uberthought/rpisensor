@@ -91,3 +91,7 @@ class Experiences:
         if len(state0) > 0:
             return state0[-1], action[-1], value[-1][0], state1[-1]
         return None, None, None, None
+
+    def denormalize_temperature(temperature):
+        return temperature * 100 + 15
+

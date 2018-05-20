@@ -1,8 +1,9 @@
 #!/usr/bin/python3
 
-from Simulation import Simulation
-# from Sensor import Sensor
-# from Solenoid import Solenoid
+from threading import Thread
+
+from Sensor import Sensor
+from Solenoid import Solenoid
 from network import Model
 from Experiences import Experiences
 from Settings import Settings
@@ -12,59 +13,47 @@ import numpy as np
 import random
 import math
 
-sensor = solenoid = simulation = Simulation.init()
-# sensor = Sensor()
-# solenoid = Solenoid()
-experiences = Experiences()
-model = Model()
+class OnlineTrainer:
 
-temperature = target = Settings.getTargetC()
-state0 = None
-actions = []
-action = 0
-start = time.time()
+    def __init__(self):
+        self.sensor = Sensor()
+        self.solenoid = Solenoid()
 
-while True:
+        self.experiences = Experiences()
+        self.model = Model()
 
-    if random.random() < 0.2:
-        state0 = None
+        action = 0
 
-    force=False
-    explore=False
+    def run_once(self):
+        target = Settings.getTargetC()
+        temperature, humidity, timestamp, outside = self.sensor.gather()
+        self.experiences.add(temperature, humidity, self.solenoid.getPower(), timestamp, target, outside)
+        state0, _, _, _ = self.experiences.last()
+        
+        if random.random() < 0.2:
+            state0 = None
 
-    if (temperature - target) < -1.0:
-        action = 2
-        force=True
-    elif (temperature - target) > 1.0:
-        action = 3
-        force=True
-    elif state0 is None:
-        action = np.random.choice(Model.action_size, 1)[0]
-        explore=True
-    else:
-        action = model.dqn_run_action([state0])
+        if (temperature - target) < -1.0:
+            action = 2
+        elif (temperature - target) > 1.0:
+            action = 3
+        elif state0 is None:
+            action = np.random.choice(Model.action_size, 1)[0]
+        else:
+            action = self.model.dqn_run_action([state0])
 
-    solenoid.setPower(action)
+        self.solenoid.setPower(action)
 
-    simulation.step()
-    temperature, humidity, timestamp, outside = sensor.gather()
-    experiences.add(temperature, humidity, solenoid.power, timestamp, target, outside)
-    state0, _, value, _ = experiences.last()
+        print(target, temperature, action)
+        # print("{0:0.2f}".format(temperature), str(action)+action_type, "{0:0.2f}".format(value), "{0:0.2f}".format(start-last), state0)
 
-    model_loss = model.model_train(experiences, True)
-    dqn_loss = model.dqn_train(experiences, True)
-    model.save()
+    def train_once(self):
+        model_loss = self.model.model_train(self.experiences, True)
+        dqn_loss = self.model.dqn_train(self.experiences, True)
+        self.model.save()
 
-    target = Settings.getTargetC()
+        print(model_loss, dqn_loss)
 
-    if force:
-        action_type='f'
-    elif explore:
-        action_type='e'
-    else:
-        action_type=' '
-
-    last = start
-    start = time.time()
-    if value != None:
-        print("{0:0.2f}".format(temperature), str(action)+action_type, "{0:0.2f}".format(value), "{0:0.2f}".format(start-last), state0)
+# trainer = OnlineTrainer()
+# trainer.run_once()
+# trainer.train_once()

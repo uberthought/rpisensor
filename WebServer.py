@@ -12,6 +12,8 @@ from Solenoid import Solenoid
 
 from online_train import OnlineTrainer
 
+model_loss, dqn_loss = math.nan, math.nan
+
 class WebServer(BaseHTTPRequestHandler):
 
     def do_GET(self):
@@ -55,24 +57,28 @@ class WebServer(BaseHTTPRequestHandler):
 
         self.wfile.write(bytes('<script>', 'utf-8'))
     
-        self.wfile.write(bytes('document.getElementById("message").innerHTML ="' + message + '";', 'utf-8'))
+        self.wfile.write(bytes('document.getElementById("message").innerHTML = "' + message + '";', 'utf-8'))
     
-        self.wfile.write(bytes('document.getElementById("target").innerHTML ="' + str(Settings.getTargetF()) + '";', 'utf-8'))
+        self.wfile.write(bytes('document.getElementById("target").innerHTML = "' + str(Settings.getTargetF()) + '";', 'utf-8'))
     
         if Settings.getGathering():
-            self.wfile.write(bytes('document.getElementById("gathering").value ="Stop Gathering";', 'utf-8'))
+            self.wfile.write(bytes('document.getElementById("gathering").value = "Stop Gathering";', 'utf-8'))
         else:
-            self.wfile.write(bytes('document.getElementById("gathering").value ="Start Gathering";', 'utf-8'))
+            self.wfile.write(bytes('document.getElementById("gathering").value = "Start Gathering";', 'utf-8'))
     
         if Settings.getTraining():
-            self.wfile.write(bytes('document.getElementById("training").value ="Stop Training";', 'utf-8'))
+            self.wfile.write(bytes('document.getElementById("training").value = "Stop Training";', 'utf-8'))
         else:
-            self.wfile.write(bytes('document.getElementById("training").value ="Start Training";', 'utf-8'))
+            self.wfile.write(bytes('document.getElementById("training").value = "Start Training";', 'utf-8'))
     
         if Settings.getOn():
-            self.wfile.write(bytes('document.getElementById("power").value ="Turn Off";', 'utf-8'))
+            self.wfile.write(bytes('document.getElementById("power").value = "Turn Off";', 'utf-8'))
+            self.wfile.write(bytes('document.getElementById("gathering").disabled = false;', 'utf-8'))
+            self.wfile.write(bytes('document.getElementById("training").disabled = false;', 'utf-8'))
         else:
-            self.wfile.write(bytes('document.getElementById("power").value ="Turn On";', 'utf-8'))
+            self.wfile.write(bytes('document.getElementById("power").value = "Turn On";', 'utf-8'))
+            self.wfile.write(bytes('document.getElementById("gathering").disabled = true;', 'utf-8'))
+            self.wfile.write(bytes('document.getElementById("training").disabled = true;', 'utf-8'))
     
         self.wfile.write(bytes('</script>', 'utf-8'))
 
@@ -111,6 +117,9 @@ class WebServer(BaseHTTPRequestHandler):
         else:
             message += '</br>Heater is not running'
 
+        message += '</br>Model loss is ' + str(model_loss)
+        message += '</br>DQN loss is ' + str(dqn_loss)
+
         return message
 
     def run(id):
@@ -141,7 +150,7 @@ while True:
             trainer.run_once()
 
         if Settings.getTraining():
-            trainer.train_once()
+            model_loss, dqn_loss = trainer.train_once()
 
     elapse = time.time() - start
 

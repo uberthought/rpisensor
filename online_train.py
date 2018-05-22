@@ -52,6 +52,8 @@ class OnlineTrainer:
 
         print(model_loss, dqn_loss)
 
+        return model_loss, dqn_loss
+
 # trainer = OnlineTrainer()
 # trainer.run_once()
 # trainer.train_once()

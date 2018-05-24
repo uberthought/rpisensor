@@ -4,7 +4,8 @@ import numpy as np
 import math
 import random
 
-from network import Model
+state_size = 4
+action_size = 4
 
 def normalize_temperature(temperature):
     # max = 30
@@ -32,15 +33,15 @@ class Experiences:
             self.reset()
 
     def reset(self):
-        self.states0 = np.array([], dtype=np.float).reshape(0, Model.state_size)
-        self.actions = np.array([], dtype=np.float).reshape(0, Model.action_size)
-        self.states1 = np.array([], dtype=np.float).reshape(0, Model.state_size)
+        self.states0 = np.array([], dtype=np.float).reshape(0, state_size)
+        self.actions = np.array([], dtype=np.float).reshape(0, action_size)
+        self.states1 = np.array([], dtype=np.float).reshape(0, state_size)
         self.values = np.array([], dtype=np.float).reshape(0, 1)
         self.appendFake()
 
     def appendFake(self):
-        state = np.full(Model.state_size, math.inf)
-        action = np.full(Model.action_size, math.inf)
+        state = np.full(state_size, math.inf)
+        action = np.full(action_size, math.inf)
         value = np.full(1, math.inf)
         self.states0 = np.concatenate((self.states0, [state]), axis=0)
         self.actions = np.concatenate((self.actions, [action]), axis=0)
@@ -54,7 +55,7 @@ class Experiences:
     def add2(self, temperature, humidity, power, timestamp, target, outside):
         state0 = self.states1[-1]
         state1 = np.array([normalize_temperature(target), normalize_temperature(outside), state0[3], temperature - target])
-        action = np.zeros(Model.action_size)
+        action = np.zeros(action_size)
         action[power] = 1
         value = np.full(1, getValue(temperature, target, power))
         
@@ -65,9 +66,9 @@ class Experiences:
 
     def get(self):
 
-        states0 = np.array([], dtype=np.float).reshape(0, Model.state_size)
-        actions = np.array([], dtype=np.float).reshape(0, Model.action_size)
-        states1 = np.array([], dtype=np.float).reshape(0, Model.state_size)
+        states0 = np.array([], dtype=np.float).reshape(0, state_size)
+        actions = np.array([], dtype=np.float).reshape(0, action_size)
+        states1 = np.array([], dtype=np.float).reshape(0, state_size)
         values = np.array([], dtype=np.float).reshape(0, 1)
 
         for i in range(len(self.states0)):

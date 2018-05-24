@@ -7,6 +7,6 @@ import time
 communication = Communication()
 
 while True:
-    experiences = communication.receiveExperiences()
+    experiences = communication.receiveExperiences('')
     print(experiences)
     time.sleep(1)

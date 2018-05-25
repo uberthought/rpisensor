@@ -3,6 +3,7 @@ import os.path
 import numpy as np
 import math
 import random
+import threading
 
 state_size = 4
 action_size = 4
@@ -38,6 +39,7 @@ class Experiences:
         self.states1 = np.array([], dtype=np.float).reshape(0, state_size)
         self.values = np.array([], dtype=np.float).reshape(0, 1)
         self.appendFake()
+        pickle.dump([self.states0, self.actions, self.values, self.states1], open("experiences.p", "wb"))
 
     def appendFake(self):
         state = np.full(state_size, math.inf)

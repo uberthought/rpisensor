@@ -5,6 +5,7 @@ from Solenoid import Solenoid
 from network import Model
 from Experiences import Experiences
 from Settings import Settings
+from Communication import Communication
 
 import time
 import numpy as np
@@ -53,6 +54,16 @@ class OnlineTrainer:
         print(model_loss, dqn_loss)
 
         return model_loss, dqn_loss
+
+    def send_experiences(self):
+        try:
+            communication = Communication()
+            communication.send('192.168.1.178', self.experiences)
+            # self.experiences.reset()
+        except ConnectionRefusedError:
+            print('ConnectionRefusedError')
+            pass
+
 
 # trainer = OnlineTrainer()
 # trainer.run_once()

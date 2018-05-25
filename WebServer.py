@@ -150,9 +150,11 @@ while True:
             trainer.run_once()
 
         if Settings.getTraining():
-            model_loss, dqn_loss = trainer.train_once()
+            trainer.send_experiences()
 
     elapse = time.time() - start
 
-    if elapse < 15:
-        time.sleep(15 - elapse)
+    print(elapse)
+
+    if elapse < 5:
+        time.sleep(5 - elapse)

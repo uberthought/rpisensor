@@ -33,6 +33,9 @@ class Experiences:
         else:
             self.reset()
 
+    def __str__(self):
+        return object.__str__(self) + str(len(self.states0))
+
     def reset(self):
         self.states0 = np.array([], dtype=np.float).reshape(0, state_size)
         self.actions = np.array([], dtype=np.float).reshape(0, action_size)

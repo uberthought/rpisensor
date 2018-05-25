@@ -52,7 +52,7 @@ class WebServer(BaseHTTPRequestHandler):
         self.send_header("Content-type", "text/html")
         self.end_headers()
 
-        with open('WebServer/index.html', 'r') as indexfile:
+        with open('Server.html', 'r') as indexfile:
             self.wfile.write(bytes(indexfile.read(), 'utf-8'))
 
         self.wfile.write(bytes('<script>', 'utf-8'))

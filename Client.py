@@ -12,8 +12,6 @@ from Solenoid import Solenoid
 
 from online_train import OnlineTrainer
 
-model_loss, dqn_loss = math.nan, math.nan
-
 class WebServer(BaseHTTPRequestHandler):
 
     def do_GET(self):
@@ -116,9 +114,6 @@ class WebServer(BaseHTTPRequestHandler):
             message += '</br>Heater is running'
         else:
             message += '</br>Heater is not running'
-
-        message += '</br>Model loss is ' + str(model_loss)
-        message += '</br>DQN loss is ' + str(dqn_loss)
 
         return message
 

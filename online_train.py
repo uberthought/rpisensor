@@ -27,7 +27,7 @@ class OnlineTrainer:
         target = Settings.getTargetC()
         temperature, humidity, timestamp, outside = self.sensor.gather()
         self.experiences.add(temperature, humidity, self.solenoid.getPower(), timestamp, target, outside)
-        state0, _, _, _, _ = self.experiences.last()
+        state0, _, _, _ = self.experiences.last()
         
         if random.random() < 0.2:
             state0 = None

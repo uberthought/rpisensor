@@ -55,7 +55,7 @@ class Experiences:
 
         self.temperatures = np.array([], dtype=np.float)
         self.humidities = np.array([], dtype=np.float)
-        self.powers = np.array([], dtype=np.float)
+        self.powers = np.array([], dtype=np.int)
         self.targets = np.array([], dtype=np.float)
         self.outsides = np.array([], dtype=np.float)
         self.timestamps = np.array([], dtype=np.str)
@@ -86,6 +86,7 @@ class Experiences:
         self.save()
 
     def add2(self, temperature, humidity, power, timestamp, target, outside):
+
         state0 = self.last_state
         state1 = np.array([normalize_temperature(target), normalize_temperature(outside), state0[3], temperature - target])
         action = np.zeros(action_size)
@@ -113,29 +114,40 @@ class Experiences:
         values = np.array([], dtype=np.float).reshape(0, 1)
         timestamps = np.array([], dtype=np.str).reshape(0, 1)
 
-        for i in range(len(self.states0)):
-            state0 = self.states0[i]
-            state1 = self.states1[i]
-            action = self.actions[i]
-            value = self.values[i]
+        state1 = []
+        previous_delta = None
+        for i in range(len(self.timestamps)):
+            target = self.targets[i]
+            outside = self.outsides[i]
+            temperature = self.temperatures[i]
+            power = self.powers[i]
             timestamp = self.timestamps[i]
-            if np.any(state0 == math.inf) or np.any(state1 == math.inf):
+
+            delta = temperature - target
+
+            state0 = state1[:]
+            state1 = np.array([normalize_temperature(target), normalize_temperature(outside), previous_delta, delta])
+            action = np.zeros(action_size)
+            action[power] = 1
+            value = np.full(1, getValue(temperature, target, power))
+
+            previous_delta = delta
+
+            if len(state0) == 0 or np.any(state0 == None):
                 continue
-            if np.any(action == math.inf) or np.any(value == math.inf):
-                continue
+
             states0 = np.concatenate((states0, [state0]), axis=0)
             actions = np.concatenate((actions, [action]), axis=0)
             states1 = np.concatenate((states1, [state1]), axis=0)
             values = np.concatenate((values, [value]), axis=0)
-            timestamps = np.concatenate((timestamps, [[timestamp]]), axis=0)
-            
-        return states0, actions, values, states1, timestamps
+
+        return states0, actions, values, states1
 
     def last(self):
-        state0, action, value, state1, timestamp = self.get()
+        state0, action, value, state1 = self.get()
         if len(state0) > 0:
-            return state0[-1], action[-1], value[-1][0], state1[-1], timestamp[-1]
-        return None, None, None, None, None
+            return state0[-1], action[-1], value[-1][0], state1[-1]
+        return None, None, None, None
 
     def denormalize_temperature(temperature):
         return temperature * 100 + 15

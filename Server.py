@@ -64,10 +64,7 @@ class WebServer(BaseHTTPRequestHandler):
 
     def getState(self):
         experiences = Experiences()
-        last = experiences.last()
-        timestamp = last[4]
-        if timestamp != None:
-            timestamp = timestamp[0]
+        timestamp = experiences.timestamps[-1]
         message = str(experiences)
         message += '<br>'
         message += str(timestamp)

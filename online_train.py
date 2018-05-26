@@ -43,7 +43,7 @@ class OnlineTrainer:
 
         self.solenoid.setPower(action)
 
-        print(target, temperature, action)
+        # print(target, temperature, action)
         # print("{0:0.2f}".format(temperature), str(action)+action_type, "{0:0.2f}".format(value), "{0:0.2f}".format(start-last), state0)
 
     def train_once(self):

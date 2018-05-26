@@ -64,7 +64,10 @@ class WebServer(BaseHTTPRequestHandler):
 
     def getState(self):
         experiences = Experiences()
-        timestamp = experiences.timestamps[-2][0]
+        last = experiences.last()
+        timestamp = last[4]
+        if timestamp != None:
+            timestamp = timestamp[0]
         message = str(experiences)
         message += '<br>'
         message += str(timestamp)
@@ -96,7 +99,7 @@ while True:
         experiences = communication.receive('')
         experiences.append()
 
-    print(elapse)
+    # print(elapse)
 
     if elapse < 5:
         time.sleep(5 - elapse)

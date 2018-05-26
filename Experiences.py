@@ -29,9 +29,9 @@ class Experiences:
     def __init__(self):
         if os.path.exists('experiences.p'):
             [self.states0, self.actions, self.values, self.states1, self.timestamps] = pickle.load(open("experiences.p", "rb"))
-            self.appendFake()
         else:
             self.reset()
+        self.last_state = np.full(state_size, math.inf)
 
     def __str__(self):
         return object.__str__(self) + str(len(self.states0))
@@ -42,7 +42,6 @@ class Experiences:
         self.states1 = np.array([], dtype=np.float).reshape(0, state_size)
         self.values = np.array([], dtype=np.float).reshape(0, 1)
         self.timestamps = np.array([], dtype=np.str).reshape(0, 1)
-        self.appendFake()
         self.save()
 
     def save(self):
@@ -63,23 +62,12 @@ class Experiences:
             timestamps = np.append(saved[4], timestamps, axis=0)
         pickle.dump([states0, actions, values, states1, timestamps], open("experiences.p", "wb"))
 
-    def appendFake(self):
-        state = np.full(state_size, math.inf)
-        action = np.full(action_size, math.inf)
-        value = np.full(1, math.inf)
-        timestamp = np.full(1, '')
-        self.states0 = np.concatenate((self.states0, [state]), axis=0)
-        self.actions = np.concatenate((self.actions, [action]), axis=0)
-        self.states1 = np.concatenate((self.states1, [state]), axis=0)
-        self.values = np.concatenate((self.values, [value]), axis=0)
-        self.timestamps = np.concatenate((self.timestamps, [timestamp]), axis=0)
-
     def add(self, temperature, humidity, power, timestamp, target, outside):
         self.add2(temperature, humidity, power, timestamp, target, outside)
         self.save()
 
     def add2(self, temperature, humidity, power, timestamp, target, outside):
-        state0 = self.states1[-1]
+        state0 = self.last_state
         state1 = np.array([normalize_temperature(target), normalize_temperature(outside), state0[3], temperature - target])
         action = np.zeros(action_size)
         action[power] = 1
@@ -91,6 +79,7 @@ class Experiences:
         self.states1 = np.concatenate((self.states1, [state1]), axis=0)
         self.values = np.concatenate((self.values, [value]), axis=0)
         self.timestamps = np.concatenate((self.timestamps, [timestamp]), axis=0)
+        self.last_state = state1
 
     def get(self):
 

@@ -154,7 +154,7 @@ while True:
 
     elapse = time.time() - start
 
-    print(elapse)
+    # print(elapse)
 
     if elapse < 5:
         time.sleep(5 - elapse)

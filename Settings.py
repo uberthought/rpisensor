@@ -23,8 +23,6 @@ class Settings:
             self.on = settings.on
             self.gathering = settings.gathering
             self.training = settings.training
-            if self.gathering and self.training:
-                self.training = False
 
     def save(self):
         pickle.dump(self, open("settings.p", "wb"))
@@ -41,8 +39,6 @@ class Settings:
     def setGathering(gathering):
         settings.load()
         settings.gathering = gathering
-        if gathering:
-            settings.training = False
         settings.save()
 
     def getGathering():
@@ -52,8 +48,6 @@ class Settings:
     def setTraining(training):
         settings.load()
         settings.training = training
-        if training:
-            settings.gathering = False
         settings.save()
 
     def getTraining():

@@ -28,7 +28,12 @@ def getValue(temperature, target, power):
 class Experiences:
     def __init__(self):
         if os.path.exists('experiences.p'):
-            [self.states0, self.actions, self.values, self.states1, self.timestamps] = pickle.load(open("experiences.p", "rb"))
+            saved = pickle.load(open("experiences.p", "rb"))
+            self.states0 = saved.states0
+            self.actions = saved.actions
+            self.values = saved.values
+            self.states1 = saved.states1
+            self.timestamps = saved.timestamps
         else:
             self.reset()
         self.last_state = np.full(state_size, math.inf)
@@ -45,22 +50,17 @@ class Experiences:
         self.save()
 
     def save(self):
-        pickle.dump([self.states0, self.actions, self.values, self.states1, self.timestamps], open("experiences.p", "wb"))
+        pickle.dump(self, open("experiences.p", "wb"))
 
     def append(self):
-        states0 = self.states0
-        actions = self.actions
-        values = self.values
-        states1 = self.states1
-        timestamps = self.timestamps
         if os.path.exists('experiences.p'):
             saved = pickle.load(open("experiences.p", "rb"))
-            states0 = np.append(saved[0], states0, axis=0)
-            actions = np.append(saved[1], actions, axis=0)
-            values = np.append(saved[2], values, axis=0)
-            states1 = np.append(saved[3], states1, axis=0)
-            timestamps = np.append(saved[4], timestamps, axis=0)
-        pickle.dump([states0, actions, values, states1, timestamps], open("experiences.p", "wb"))
+            self.states0 = np.append(saved.states0, self.states0, axis=0)
+            self.actions = np.append(saved.actions, self.actions, axis=0)
+            self.values = np.append(saved.values, self.values, axis=0)
+            self.states1 = np.append(saved.states1, self.states1, axis=0)
+            self.timestamps = np.append(saved.timestamps, self.timestamps, axis=0)
+        pickle.dump(self, open("experiences.p", "wb"))
 
     def add(self, temperature, humidity, power, timestamp, target, outside):
         self.add2(temperature, humidity, power, timestamp, target, outside)

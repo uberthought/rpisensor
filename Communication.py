@@ -7,7 +7,7 @@ import struct
 
 class Communication:
 
-    PORT = 50008
+    PORT = 50007
 
     def __init__(self):
         self.s = None
@@ -22,6 +22,12 @@ class Communication:
         self.s.send(data)
         data = self.s.recv(1024)
         self.s.close()
+
+    def receive_init(self, host):
+        if self.s == None:
+            self.s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            self.s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+            self.s.bind((host, Communication.PORT))
 
     def receive(self, host):
         if self.s == None:

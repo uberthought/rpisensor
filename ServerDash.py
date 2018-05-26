@@ -33,7 +33,7 @@ def update_output_div(input_value):
     experiences = Experiences()
     temperatures = experiences.states0[:,3]
     values = experiences.values[:,0]
-    timestamps = experiences.timestamps[:,0]
+    timestamps = experiences.timestamps
 
     targets = experiences.states0[:,0]
     targets = [Experiences.denormalize_temperature(x) for x in targets]
@@ -43,15 +43,17 @@ def update_output_div(input_value):
 
     return {
         'data': [
-            go.Scatter(x = timestamps, y = temperatures, mode = 'markers', name = 'sensor temperature'),
-            go.Scatter(x = timestamps, y = targets, mode = 'markers', name = 'target temperature'),
-            go.Scatter(x = timestamps, y = values, mode = 'markers', name = 'value'),
+            # go.Scatter(x = timestamps, y = temperatures, mode = 'markers', name = 'sensor temperature'),
+            # go.Scatter(x = timestamps, y = targets, mode = 'markers', name = 'target temperature'),
+            # go.Scatter(x = timestamps, y = values, mode = 'markers', name = 'value'),
+
+            go.Scatter(x = timestamps, y = experiences.temperatures, mode = 'markers', name = 'temperature'),
+            go.Scatter(x = timestamps, y = experiences.humidities, mode = 'markers', name = 'humidity'),
+            go.Scatter(x = timestamps, y = experiences.powers, mode = 'markers', name = 'power'),
+            go.Scatter(x = timestamps, y = experiences.targets, mode = 'markers', name = 'target'),
+            # go.Scatter(x = timestamps, y = experiences.outsides, mode = 'markers', name = 'outside'),
+
         ],
-        # 'data': [
-        #     {'x': timestamps, 'y': temperatures, 'type': 'scatter', 'name': 'temperatures'},
-        #     {'x': timestamps, 'y': targets, 'type': 'scatter', 'name': 'targets'},
-        #     {'x': timestamps, 'y': values, 'type': 'scatter', 'name': 'values'},
-        # ],
         'layout': {
             'title': 'Dash Data Visualization'
         }

@@ -60,7 +60,7 @@ class OnlineTrainer:
         if len(self.experiences.states0) > 1:
             try:
                 communication = Communication()
-                communication.send('192.168.1.178', self.experiences)
+                communication.send('35.232.250.6', self.experiences)
                 self.experiences.reset()
             except (ConnectionRefusedError, ConnectionResetError):
                 pass

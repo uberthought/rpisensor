@@ -1,7 +1,5 @@
 #!/usr/bin/python3
 
-from threading import Thread
-
 import dash
 import dash_core_components as dcc
 import dash_html_components as html
@@ -10,7 +8,6 @@ import plotly.graph_objs as go
 import time
 
 from Experiences import Experiences
-from Communication import Communication
 
 app = dash.Dash()
 
@@ -63,25 +60,5 @@ def update_output_div(input_value):
         }
     }
 
-communication = Communication()
-experiences = communication.receive_init('')
-
-def collect():
-    global communication
-
-    while True:
-        start = time.time()
-
-        experiences = communication.receive('')
-        experiences.append()
-
-        elapse = time.time() - start
-        print(elapse)
-
 if __name__ == '__main__':
-    # webServerThread = Thread(target=app.run_server, kwargs={'host': '192.168.1.178'})
-    backgroundThread = Thread(target=collect)
-    webServerThread.start()
-
-    collect()
-    # app.run_server(debug=True)
+    app.run_server(debug=True, host='192.168.1.178')

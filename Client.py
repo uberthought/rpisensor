@@ -42,6 +42,8 @@ class WebServer(BaseHTTPRequestHandler):
             self.coolerButton()
         if b'power' in postvars.keys():
             self.powerButton()
+        if b'exploring' in postvars.keys():
+            self.exploringButton()
 
 
     def showRoot(self, message):
@@ -64,6 +66,11 @@ class WebServer(BaseHTTPRequestHandler):
         else:
             self.wfile.write(bytes('document.getElementById("gathering").value = "Start Gathering";', 'utf-8'))
     
+        if Settings.getExploring():
+            self.wfile.write(bytes('document.getElementById("exploring").value = "Stop Exploring";', 'utf-8'))
+        else:
+            self.wfile.write(bytes('document.getElementById("exploring").value = "Start Exploring";', 'utf-8'))
+    
         if Settings.getTraining():
             self.wfile.write(bytes('document.getElementById("training").value = "Stop Training";', 'utf-8'))
         else:
@@ -73,10 +80,12 @@ class WebServer(BaseHTTPRequestHandler):
             self.wfile.write(bytes('document.getElementById("power").value = "Turn Off";', 'utf-8'))
             self.wfile.write(bytes('document.getElementById("gathering").disabled = false;', 'utf-8'))
             self.wfile.write(bytes('document.getElementById("training").disabled = false;', 'utf-8'))
+            self.wfile.write(bytes('document.getElementById("exploring").disabled = false;', 'utf-8'))
         else:
             self.wfile.write(bytes('document.getElementById("power").value = "Turn On";', 'utf-8'))
             self.wfile.write(bytes('document.getElementById("gathering").disabled = true;', 'utf-8'))
             self.wfile.write(bytes('document.getElementById("training").disabled = true;', 'utf-8'))
+            self.wfile.write(bytes('document.getElementById("exploring").disabled = true;', 'utf-8'))
     
         self.wfile.write(bytes('</script>', 'utf-8'))
 
@@ -100,6 +109,10 @@ class WebServer(BaseHTTPRequestHandler):
 
     def trainingButton(self):
         Settings.setTraining(not Settings.getTraining())
+        self.showRoot(self.getState())
+
+    def exploringButton(self):
+        Settings.setExploring(not Settings.getExploring())
         self.showRoot(self.getState())
 
     def getState(self):

@@ -16,10 +16,11 @@ class Solenoid:
 
     def load(self):
         if os.path.exists('solenoid.p'):
-            self.on = pickle.load(open("solenoid.p", "rb"))
+            saved = pickle.load(open("solenoid.p", "rb"))
+            self.on = saved.on
 
     def save(self):
-        pickle.dump(self.on, open("solenoid.p", "wb"))
+        pickle.dump(self, open("solenoid.p", "wb"))
 
     def switchOn(self):
         self.on = True

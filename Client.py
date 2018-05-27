@@ -116,17 +116,22 @@ class WebServer(BaseHTTPRequestHandler):
         self.showRoot(self.getState())
 
     def getState(self):
-        sensor = Sensor()
-        solenoid = Solenoid()
-        temperature, _, _, _ = sensor.gather()
-        f = temperature * 9 / 5 + 32
-        f = math.floor(f * 10) / 10
-        message = 'Current temperature is ' + str(f)
+        message = ''
 
-        if solenoid.isOn():
-            message += '</br>Heater is running'
-        else:
-            message += '</br>Heater is not running'
+        try:
+            sensor = Sensor()
+            solenoid = Solenoid()
+            temperature, _, _, _ = sensor.gather()
+            f = temperature * 9 / 5 + 32
+            f = math.floor(f * 10) / 10
+            message = 'Current temperature is ' + str(f)
+
+            if solenoid.isOn():
+                message += '</br>Heater is running'
+            else:
+                message += '</br>Heater is not running'
+        except (EOFError, Exception):
+            pass
 
         return message
 

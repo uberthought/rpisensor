@@ -15,6 +15,10 @@ def normalize_temperature(temperature):
     # return temperature - 22
     return (temperature - 15) / 100
 
+def create_state(target, temperature, outside):
+    return np.array([normalize_temperature(target), normalize_temperature(outside), temperature - target])
+
+
 def getValue(temperature, target, power):
     value = 1 - math.fabs(temperature - target)
     if power == 3:
@@ -87,7 +91,7 @@ class Experiences:
     def add2(self, temperature, humidity, power, timestamp, target, outside):
 
         state0 = self.last_state
-        state1 = np.array([normalize_temperature(target), normalize_temperature(outside), temperature - target])
+        state1 = create_state(target, temperature, outside)
         action = np.zeros(action_size)
         action[power] = 1
         value = np.full(1, getValue(temperature, target, power))
@@ -121,10 +125,8 @@ class Experiences:
             power = self.powers[i]
             timestamp = self.timestamps[i]
 
-            delta = temperature - target
-
             state0 = state1[:]
-            state1 = np.array([normalize_temperature(target), normalize_temperature(outside), delta])
+            state1 = create_state(target, temperature, outside)
             action = np.zeros(action_size)
             action[power] = 1
             value = np.full(1, getValue(temperature, target, power))

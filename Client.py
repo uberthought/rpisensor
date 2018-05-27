@@ -74,9 +74,9 @@ class WebServer(BaseHTTPRequestHandler):
             self.wfile.write(bytes('document.getElementById("exploring").value = "Start Exploring";', 'utf-8'))
     
         if Settings.getTraining():
-            self.wfile.write(bytes('document.getElementById("training").value = "Stop Training";', 'utf-8'))
+            self.wfile.write(bytes('document.getElementById("training").value = "Stop Sending";', 'utf-8'))
         else:
-            self.wfile.write(bytes('document.getElementById("training").value = "Start Training";', 'utf-8'))
+            self.wfile.write(bytes('document.getElementById("training").value = "Start Sending";', 'utf-8'))
     
         if Settings.getOn():
             self.wfile.write(bytes('document.getElementById("power").value = "Turn Off";', 'utf-8'))

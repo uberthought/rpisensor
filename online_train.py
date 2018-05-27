@@ -3,7 +3,7 @@
 from Sensor import Sensor
 from Solenoid import Solenoid
 from network import Model
-from Experiences import Experiences
+from Experiences import Experiences, create_state
 from Settings import Settings
 from Communication import Communication
 
@@ -34,7 +34,7 @@ class OnlineTrainer:
         exploring = Settings.getExploring()
         temperature, humidity, timestamp, outside = self.sensor.gather()
         self.experiences.add(temperature, humidity, self.solenoid.getPower(), timestamp, target, outside)
-        state0, _, _, _ = self.experiences.last()
+        state0 = create_state(target, temperature, outside)
 
         if exploring and random.random() < 0.2:
             state0 = None

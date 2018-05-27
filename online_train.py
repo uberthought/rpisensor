@@ -20,6 +20,7 @@ class OnlineTrainer:
 
         self.experiences = Experiences()
         self.model = Model()
+        self.last_state = None
 
         self.target = 0
         self.temperature = 0

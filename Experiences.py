@@ -5,7 +5,7 @@ import math
 import random
 import threading
 
-state_size = 4
+state_size = 3
 action_size = 4
 
 def normalize_temperature(temperature):
@@ -87,7 +87,7 @@ class Experiences:
     def add2(self, temperature, humidity, power, timestamp, target, outside):
 
         state0 = self.last_state
-        state1 = np.array([normalize_temperature(target), normalize_temperature(outside), state0[3], temperature - target])
+        state1 = np.array([normalize_temperature(target), normalize_temperature(outside), temperature - target])
         action = np.zeros(action_size)
         action[power] = 1
         value = np.full(1, getValue(temperature, target, power))
@@ -114,7 +114,6 @@ class Experiences:
         timestamps = np.array([], dtype=np.str).reshape(0, 1)
 
         state1 = []
-        previous_delta = None
         for i in range(len(self.timestamps)):
             target = self.targets[i]
             outside = self.outsides[i]
@@ -125,12 +124,10 @@ class Experiences:
             delta = temperature - target
 
             state0 = state1[:]
-            state1 = np.array([normalize_temperature(target), normalize_temperature(outside), previous_delta, delta])
+            state1 = np.array([normalize_temperature(target), normalize_temperature(outside), delta])
             action = np.zeros(action_size)
             action[power] = 1
             value = np.full(1, getValue(temperature, target, power))
-
-            previous_delta = delta
 
             if len(state0) == 0 or np.any(state0 == None):
                 continue
@@ -143,9 +140,9 @@ class Experiences:
         return states0, actions, values, states1
 
     def last(self):
-        state0, action, value, state1 = self.get()
-        if len(state0) > 0:
-            return state0[-1], action[-1], value[-1][0], state1[-1]
+        states0, actions, values, states1 = self.get()
+        if len(states0) > 0:
+            return states0[-1], actions[-1], values[-1][0], states1[-1]
         return None, None, None, None
 
     def denormalize_temperature(temperature):

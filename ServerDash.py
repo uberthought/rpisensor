@@ -109,10 +109,10 @@ def update_output_plotQ(input_value):
 
     return {
         'data': [
-            go.Scatter(x = temperatures, y = off, mode = 'markers', name = 'off'),
-            go.Scatter(x = temperatures, y = low, mode = 'markers', name = 'low'),
-            go.Scatter(x = temperatures, y = high, mode = 'markers', name = 'high'),
-            go.Scatter(x = temperatures, y = ac, mode = 'markers', name = 'ac'),
+            go.Scatter(x = temperatures, y = off, name = 'off'),
+            go.Scatter(x = temperatures, y = low, name = 'low'),
+            go.Scatter(x = temperatures, y = high, name = 'high'),
+            go.Scatter(x = temperatures, y = ac, name = 'ac'),
         ],
         'layout': go.Layout(
             title='plotQ'

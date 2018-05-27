@@ -9,9 +9,9 @@ from Experiences import Experiences
 from Settings import Settings
 
 def plotQ(model, experiences, settings):
-    target = settings.target
-    min = target - 1
-    max = target + 1
+    target = 28.444444444444443
+    min = target - 0.5
+    max = target + 0.5
 
     experiencesFake = Experiences()
     experiencesFake.reset()

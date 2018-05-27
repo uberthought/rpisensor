@@ -12,6 +12,8 @@ from Solenoid import Solenoid
 
 from online_train import OnlineTrainer
 
+trainer = OnlineTrainer()
+
 class WebServer(BaseHTTPRequestHandler):
 
     def do_GET(self):
@@ -124,12 +126,18 @@ class WebServer(BaseHTTPRequestHandler):
             temperature, _, _, _ = sensor.gather()
             f = temperature * 9 / 5 + 32
             f = math.floor(f * 10) / 10
+
+            pending = trainer.pending_experience_count()
+
+
             message = 'Current temperature is ' + str(f)
 
             if solenoid.isOn():
                 message += '</br>Heater is running'
             else:
                 message += '</br>Heater is not running'
+
+            message += '</br>Pending experiences to send ' + str(pending)
         except (EOFError, Exception):
             pass
 
@@ -151,8 +159,6 @@ class WebServer(BaseHTTPRequestHandler):
 
 webServerThread = Thread(target=WebServer.run, args=[0])
 webServerThread.start()
-
-trainer = OnlineTrainer()
 
 while True:
     start = time.time()

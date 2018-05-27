@@ -65,6 +65,9 @@ class OnlineTrainer:
             except (ConnectionRefusedError, ConnectionResetError):
                 pass
 
+    def pending_experience_count(self):
+        return len(self.experiences.timestamps)
+
 
 # trainer = OnlineTrainer()
 # trainer.run_once()

@@ -42,6 +42,7 @@ class Experiences:
             self.timestamps = saved.timestamps
         else:
             self.reset()
+            self.save()
         self.last_state = np.full(state_size, math.inf)
 
     def __str__(self):
@@ -59,8 +60,6 @@ class Experiences:
         self.targets = np.array([], dtype=np.float)
         self.outsides = np.array([], dtype=np.float)
         self.timestamps = np.array([], dtype=np.str)
-
-        self.save()
 
     def save(self):
         pickle.dump(self, open("experiences.p", "wb"))

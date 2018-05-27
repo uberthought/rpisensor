@@ -62,16 +62,16 @@ class Model:
 
         self.sess = tf.Session()
 
-        self.summary_writer = tf.summary.FileWriter('./graph', self.sess.graph)
-        model_loss_summary = tf.summary.scalar('value loss', self.model_loss)
+        # self.summary_writer = tf.summary.FileWriter('./graph', self.sess.graph)
+        # model_loss_summary = tf.summary.scalar('value loss', self.model_loss)
         # model_expected_summary = tf.summary.histogram('value expected', self.values)
         # model_predicted_summary = tf.summary.histogram('value prediction', self.model_prediction)
         # model_hidden0_summary = tf.summary.histogram('model hidden 0', model_hidden0)
         # model_hidden1_summary = tf.summary.histogram('model hidden 1', model_hidden1)
-        self.model_summary = tf.summary.merge([model_loss_summary])
+        # self.model_summary = tf.summary.merge([model_loss_summary])
 
-        dqn_loss_summary = tf.summary.scalar('dqn loss', self.dqn_loss)
-        self.dqn_summary = tf.summary.merge([dqn_loss_summary])
+        # dqn_loss_summary = tf.summary.scalar('dqn loss', self.dqn_loss)
+        # self.dqn_summary = tf.summary.merge([dqn_loss_summary])
 
         self.sess.run(tf.global_variables_initializer())
 
@@ -83,7 +83,7 @@ class Model:
     def save(self):
         saver = tf.train.Saver()
         saver.save(self.sess, 'graph/graph')
-        self.summary_writer.flush()
+        # self.summary_writer.flush()
 
     def model_run(self, states, actions):
         return self.sess.run([self.state_prediction, self.value_prediction], feed_dict={self.states0: states, self.actions: actions})
@@ -121,8 +121,9 @@ class Model:
 
         feed_dict = {self.states0: states0, self.actions: actions, self.states1: states1, self.values: values}
         for i in range(200):
-            model_loss, _, summary = self.sess.run([self.model_loss, self.model_run_train, self.model_summary], feed_dict=feed_dict)
-            self.summary_writer.add_summary(summary)
+            # model_loss, _, summary = self.sess.run([self.model_loss, self.model_run_train, self.model_summary], feed_dict=feed_dict)
+            model_loss, _ = self.sess.run([self.model_loss, self.model_run_train], feed_dict=feed_dict)
+            # self.summary_writer.add_summary(summary)
         return model_loss
 
     def dqn_train(self, experiences, online):
@@ -181,7 +182,8 @@ class Model:
         loss, _ = self.sess.run([self.dqn_loss, self.dqn_run_train], feed_dict=feed_dict)
 
         for i in range(100):
-            loss, _, summary = self.sess.run([self.dqn_loss, self.dqn_run_train, self.dqn_summary], feed_dict=feed_dict)
-            self.summary_writer.add_summary(summary)
+            # loss, _, summary = self.sess.run([self.dqn_loss, self.dqn_run_train, self.dqn_summary], feed_dict=feed_dict)
+            loss, _ = self.sess.run([self.dqn_loss, self.dqn_run_train], feed_dict=feed_dict)
+            # self.summary_writer.add_summary(summary)
 
         return loss

@@ -23,12 +23,14 @@ app.layout = html.Div(children=[
 
     html.Button('Refresh', id='refresh'),
 
-    dcc.Graph(id='example-graph')
+    dcc.Graph(id='example-graph'),
+
+    dcc.Interval(id='interval-component', interval=1*1000, n_intervals=0)
 ])
 
 @app.callback(
     dash.dependencies.Output(component_id='example-graph', component_property='figure'),
-    [dash.dependencies.Input(component_id='refresh', component_property='n_clicks')])
+    [dash.dependencies.Input('interval-component', 'n_intervals')])
 def update_output_div(input_value):
     experiences = Experiences()
     temperatures = experiences.states0[:,3]

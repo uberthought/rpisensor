@@ -113,7 +113,8 @@ class Model:
         return model_loss
 
     def dqn_train(self, experiences, online):
-        discount = 0.5
+        # discount future actions
+        discount = 0.75
 
         states0, actions, values, states1 = experiences.get()
     

@@ -40,10 +40,10 @@ class OnlineTrainer:
             state0 = None
 
         if (temperature - target) < -1.0:
-            self.reason = 'force low'
+            self.reason = 'force high'
             action = 2
         elif (temperature - target) > 1.0:
-            self.reason = 'force high'
+            self.reason = 'force ac'
             action = 3
         elif state0 is None:
             self.reason = 'exploring'

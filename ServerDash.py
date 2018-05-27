@@ -28,9 +28,11 @@ app.layout = html.Div(children=[
     dcc.Interval(id='interval-component', interval=1*1000, n_intervals=0)
 ])
 
+    # [dash.dependencies.Input('interval-component', 'n_intervals')])
+
 @app.callback(
     dash.dependencies.Output(component_id='example-graph', component_property='figure'),
-    [dash.dependencies.Input('interval-component', 'n_intervals')])
+    [dash.dependencies.Input('refresh', 'n_clicks')])
 def update_output_div(input_value):
     experiences = Experiences()
     temperatures = experiences.states0[:,3]
@@ -77,8 +79,8 @@ def collect():
         print(elapse)
 
 if __name__ == '__main__':
-    webServerThread = Thread(target=app.run_server)
-    # webServerThread = Thread(target=collect)
+    # webServerThread = Thread(target=app.run_server, kwargs={'host': '192.168.1.178'})
+    backgroundThread = Thread(target=collect)
     webServerThread.start()
 
     collect()

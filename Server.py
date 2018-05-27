@@ -65,12 +65,12 @@ class WebServer(BaseHTTPRequestHandler):
     def getState(self):
         experiences = Experiences()
         timestamp = experiences.timestamps[-1]
-        message = str(experiences)
+        message = 'Collected ' + str(len(experiences.timestamps)) + ' experiences.'
         message += '<br>'
-        message += str(timestamp)
+        message += 'Last experience was ' + timestamp.strftime('%H:%M:%S') + "(UTC)"
         return message
 
-    def run(id):
+    def run():
         hostName = ''
         hostPort = 8080
 
@@ -83,20 +83,22 @@ class WebServer(BaseHTTPRequestHandler):
 
         webServer.server_close()
 
-webServerThread = Thread(target=WebServer.run, args=[0])
+def runCommunications():
+    while True:
+        start = time.time()
+
+        elapse = time.time() - start
+
+        if enabled:
+            communication = Communication()
+            experiences = communication.receive('')
+            experiences.append()
+
+        print(elapse)
+
+webServerThread = Thread(target=WebServer.run)
 webServerThread.start()
 
-while True:
-    start = time.time()
+communicationsThread = Thread(target=runCommunications)
+communicationsThread.start()
 
-    elapse = time.time() - start
-
-    if enabled:
-        communication = Communication()
-        experiences = communication.receive('')
-        experiences.append()
-
-    # print(elapse)
-
-    if elapse < 5:
-        time.sleep(5 - elapse)

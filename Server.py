@@ -64,10 +64,12 @@ class WebServer(BaseHTTPRequestHandler):
 
     def getState(self):
         experiences = Experiences()
-        timestamp = experiences.timestamps[-1]
-        message = 'Collected ' + str(len(experiences.timestamps)) + ' experiences.'
-        message += '<br>'
-        message += 'Last experience was ' + timestamp.strftime('%H:%M:%S') + "(UTC)"
+        count = len(experiences.timestamps)
+        message = 'Collected ' + str(count) + ' experiences.'
+        if count > 0:
+            timestamp = experiences.timestamps[-1]
+            message += '<br>'
+            message += 'Last experience was ' + timestamp.strftime('%H:%M:%S') + "(UTC)"
         return message
 
     def run():

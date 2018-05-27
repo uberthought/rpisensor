@@ -21,6 +21,11 @@ class OnlineTrainer:
         self.experiences = Experiences()
         self.model = Model()
 
+        self.target = 0
+        self.temperature = 0
+        self.action = 0
+        self.reason = ''
+
         action = 0
 
     def run_once(self):
@@ -34,15 +39,23 @@ class OnlineTrainer:
             state0 = None
 
         if (temperature - target) < -1.0:
+            self.reason = 'force low'
             action = 2
         elif (temperature - target) > 1.0:
+            self.reason = 'force high'
             action = 3
         elif state0 is None:
+            self.reason = 'exploring'
             action = np.random.choice(Model.action_size, 1)[0]
         else:
+            self.reason = ''
             action = self.model.dqn_run_action([state0])
 
         self.solenoid.setPower(action)
+
+        self.target = target
+        self.temperature = temperature
+        self.action = action
 
         # print(target, temperature, action)
         # print("{0:0.2f}".format(temperature), str(action)+action_type, "{0:0.2f}".format(value), "{0:0.2f}".format(start-last), state0)

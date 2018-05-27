@@ -138,6 +138,11 @@ class WebServer(BaseHTTPRequestHandler):
                 message += '</br>Heater is not running'
 
             message += '</br>Pending experiences to send ' + str(pending)
+
+            message += '</br>Target ' + str(trainer.target)
+            message += '</br>Temperature ' + str(trainer.temperature)
+            message += '</br>Action ' + str(trainer.action) + ' ' + trainer.reason
+            
         except (EOFError, Exception):
             pass
 

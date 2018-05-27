@@ -42,14 +42,14 @@ app.layout = html.Div(children=[
     [dash.dependencies.Input('refresh', 'n_clicks')])
 def update_output_div(input_value):
     experiences = Experiences()
-    temperatures = experiences.states0[:,3]
+    temperatures = experiences.states0[:,-1]
     values = experiences.values[:,0]
     timestamps = experiences.timestamps
 
     targets = experiences.states0[:,0]
     targets = [Experiences.denormalize_temperature(x) for x in targets]
 
-    temperatures = experiences.states0[:,3]
+    temperatures = experiences.states0[:,-1]
     temperatures = temperatures + targets
 
     return {
@@ -70,14 +70,14 @@ def update_output_div(input_value):
     [dash.dependencies.Input('refresh', 'n_clicks')])
 def update_output_div2(input_value):
     experiences = Experiences()
-    temperatures = experiences.states0[:,3]
+    temperatures = experiences.states0[:,-1]
     values = experiences.values[:,0]
     timestamps = experiences.timestamps
 
     targets = experiences.states0[:,0]
     targets = [Experiences.denormalize_temperature(x) for x in targets]
 
-    temperatures = experiences.states0[:,3]
+    temperatures = experiences.states0[:,-1]
     temperatures = temperatures + targets
 
     return {

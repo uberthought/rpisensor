@@ -89,4 +89,4 @@ def update_output_div2(input_value):
     }
 
 if __name__ == '__main__':
-    app.run_server(debug=True, host='192.168.1.178')
+    app.run_server(debug=True, host='10.128.0.3')

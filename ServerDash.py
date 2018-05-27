@@ -22,6 +22,8 @@ app.layout = html.Div(children=[
 
     dcc.Graph(id='example-graph'),
 
+    dcc.Graph(id='example-graph2'),
+
     dcc.Interval(id='interval-component', interval=1*1000, n_intervals=0)
 ])
 
@@ -44,20 +46,46 @@ def update_output_div(input_value):
 
     return {
         'data': [
-            # go.Scatter(x = timestamps, y = temperatures, mode = 'markers', name = 'sensor temperature'),
-            # go.Scatter(x = timestamps, y = targets, mode = 'markers', name = 'target temperature'),
-            # go.Scatter(x = timestamps, y = values, mode = 'markers', name = 'value'),
-
-            go.Scatter(x = timestamps, y = experiences.temperatures, mode = 'markers', name = 'temperature'),
-            go.Scatter(x = timestamps, y = experiences.humidities, mode = 'markers', name = 'humidity'),
-            go.Scatter(x = timestamps, y = experiences.powers, mode = 'markers', name = 'power'),
-            go.Scatter(x = timestamps, y = experiences.targets, mode = 'markers', name = 'target'),
-            # go.Scatter(x = timestamps, y = experiences.outsides, mode = 'markers', name = 'outside'),
-
+            # go.Scatter(x = timestamps, y = experiences.humidities, name = 'humidity'),
+            # go.Scatter(x = timestamps, y = experiences.outsides, name = 'outside'),
+            go.Scatter(x = timestamps, y = experiences.temperatures, name = 'temperature'),
+            go.Scatter(x = timestamps, y = experiences.targets, name = 'target'),
         ],
-        'layout': {
-            'title': 'Dash Data Visualization'
-        }
+        'layout': go.Layout(
+            title='Double Y Axis Example',
+            yaxis=dict(title='temperature'),
+        )
+    }
+
+@app.callback(
+    dash.dependencies.Output(component_id='example-graph2', component_property='figure'),
+    [dash.dependencies.Input('refresh', 'n_clicks')])
+def update_output_div2(input_value):
+    experiences = Experiences()
+    temperatures = experiences.states0[:,3]
+    values = experiences.values[:,0]
+    timestamps = experiences.timestamps
+
+    targets = experiences.states0[:,0]
+    targets = [Experiences.denormalize_temperature(x) for x in targets]
+
+    temperatures = experiences.states0[:,3]
+    temperatures = temperatures + targets
+
+    return {
+        'data': [
+            go.Scatter(x = timestamps, y = experiences.powers, mode = 'markers', name = 'power', yaxis='y1'),
+            go.Scatter(x = timestamps, y = values, name = 'value', yaxis='y2'),
+        ],
+        'layout': go.Layout(
+            title='power level',
+            yaxis=dict(title='value'),
+            yaxis2=dict(
+                title='power level',
+                overlaying='y',
+                side='right'
+            )
+        )
     }
 
 if __name__ == '__main__':

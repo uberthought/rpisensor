@@ -46,6 +46,10 @@ class WebServer(BaseHTTPRequestHandler):
             self.powerButton()
         if b'exploring' in postvars.keys():
             self.exploringButton()
+        if b'less_exploring' in postvars.keys():
+            self.less_exploringButton()
+        if b'more_exploring' in postvars.keys():
+            self.more_exploringButton()
 
 
     def showRoot(self, message):
@@ -62,6 +66,8 @@ class WebServer(BaseHTTPRequestHandler):
         self.wfile.write(bytes('document.getElementById("message").innerHTML = "' + message + '";', 'utf-8'))
     
         self.wfile.write(bytes('document.getElementById("target").innerHTML = "' + str(Settings.getTargetF()) + '";', 'utf-8'))
+
+        self.wfile.write(bytes('document.getElementById("exploration_rate").innerHTML = "' + str(Settings.getExplorationRate()) + '";', 'utf-8'))
     
         if Settings.getGathering():
             self.wfile.write(bytes('document.getElementById("gathering").value = "Stop Gathering";', 'utf-8'))
@@ -115,6 +121,14 @@ class WebServer(BaseHTTPRequestHandler):
 
     def exploringButton(self):
         Settings.setExploring(not Settings.getExploring())
+        self.showRoot(self.getState())
+
+    def less_exploringButton(self):
+        Settings.setExplorationRate(Settings.getExplorationRate() - 0.1)
+        self.showRoot(self.getState())
+
+    def more_exploringButton(self):
+        Settings.setExplorationRate(Settings.getExplorationRate() + 0.1)
         self.showRoot(self.getState())
 
     def getState(self):

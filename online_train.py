@@ -31,12 +31,15 @@ class OnlineTrainer:
 
     def run_once(self):
         target = Settings.getTargetC()
+        exploration_rate = Settings.getExplorationRate()
         exploring = Settings.getExploring()
         temperature, humidity, timestamp, outside = self.sensor.gather()
         self.experiences.add(temperature, humidity, self.solenoid.getPower(), timestamp, target, outside)
         state0 = create_state(target, temperature, outside)
 
-        if exploring and random.random() < 0.2:
+        print(exploration_rate)
+
+        if exploring and random.random() < exploration_rate:
             state0 = None
 
         if (temperature - target) < -1.0:

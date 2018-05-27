@@ -15,6 +15,7 @@ class Settings:
         self.gathering = True
         self.training = False
         self.exploring = False
+        self.exploration_rate = 0.2
         self.load()
     
     def load(self):
@@ -25,6 +26,7 @@ class Settings:
             self.gathering = settings.gathering
             self.training = settings.training
             self.exploring = settings.exploring
+            self.exploration_rate = settings.exploration_rate
 
     def save(self):
         pickle.dump(self, open("settings.p", "wb"))
@@ -64,6 +66,15 @@ class Settings:
     def getExploring():
         settings.load()
         return settings.exploring
+
+    def setExplorationRate(exploration_rate):
+        settings.load()
+        settings.exploration_rate = exploration_rate
+        settings.save()
+
+    def getExplorationRate():
+        settings.load()
+        return settings.exploration_rate
 
     def setTargetF(target): 
         settings.load()

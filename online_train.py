@@ -37,8 +37,6 @@ class OnlineTrainer:
         self.experiences.add(temperature, humidity, self.solenoid.getPower(), timestamp, target, outside)
         state0 = create_state(target, temperature, outside)
 
-        print(exploration_rate)
-
         if exploring and random.random() < exploration_rate:
             state0 = None
 

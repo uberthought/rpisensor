@@ -24,7 +24,7 @@ def getValue(temperature, target, power):
     if power == 3:
         value -= 0.05
     if power == 2:
-        value -= 0.3
+        value -= 0.1
     if power == 1:
         value -= 0.05
     return value

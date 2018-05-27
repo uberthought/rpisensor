@@ -11,41 +11,34 @@ class Solenoid:
         GPIO.setup(21, GPIO.OUT)
         GPIO.setup(11, GPIO.OUT)
         GPIO.output(11, True)
-        self.on = False
+        self.power = 0
         self.load()
 
     def load(self):
         if os.path.exists('solenoid.p'):
             saved = pickle.load(open("solenoid.p", "rb"))
-            self.on = saved.on
+            self.power = saved.power
 
     def save(self):
         pickle.dump(self, open("solenoid.p", "wb"))
 
     def switchOn(self):
-        self.on = True
         GPIO.output(21, True)
         self.save()
 
     def switchOff(self):
-        self.on = False
         GPIO.output(21, False)
         self.save()
 
     def isOn(self):
-        return self.on
-
-    def isOff(self):
-        return not self.on
+        return self.power == 2
 
     def setPower(self, power):
         if power == 2:
             self.switchOn()
         else:
             self.switchOff()
+        self.power = power
 
     def getPower(self):
-        if self.isOn():
-            return 2
-        else:
-            return 0
+        return self.power

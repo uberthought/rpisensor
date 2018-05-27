@@ -39,7 +39,7 @@ class Solenoid:
         return not self.on
 
     def setPower(self, power):
-        if power == 2 or power == 1:
+        if power == 2:
             self.switchOn()
         else:
             self.switchOff()

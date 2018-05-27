@@ -30,9 +30,9 @@ def plotQ(model, experiences, settings):
         hactions = model.dqn_run([state0])[0]
 
         temperatures.append(state0[-1])
-        off.append(hactions[0])
-        low.append(hactions[1])
-        high.append(hactions[2])
-        ac.append(hactions[3])
+        off.append(hactions[0] - hactions[0])
+        low.append(hactions[1] - hactions[0])
+        high.append(hactions[2] - hactions[0])
+        ac.append(hactions[3] - hactions[0])
 
     return temperatures, off, low, high, ac

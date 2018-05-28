@@ -9,10 +9,6 @@ from network import Model
 from Experiences import Experiences, normalize_temperature
 from Settings import Settings
 
-model = Model()
-experiences = Experiences()
-settings = Settings()
-
 def plotValue(model, experiences, settings):
 
     target = settings.target

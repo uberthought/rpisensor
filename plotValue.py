@@ -9,9 +9,8 @@ from network import Model
 from Experiences import Experiences, normalize_temperature
 from Settings import Settings
 
-def plotValue(model, experiences, settings):
-
-    target = settings.target
+def plotPredictedValue(model, experiences, settings):
+    target = 28.8889
     min = target - 1
     max = target + 1
 
@@ -21,11 +20,11 @@ def plotValue(model, experiences, settings):
         experiencesFake.add2(temperature, .5, False, 0, target, 0)
 
     states0, actions, values, states1 = experiencesFake.get()
-    temperatures = []
-    predicted_off = []
-    predicted_low = []
-    predicted_high = []
-    predicted_ac = []
+
+    off = np.array([]).reshape(0, 2)
+    low = np.array([]).reshape(0, 2)
+    high = np.array([]).reshape(0, 2)
+    ac = np.array([]).reshape(0, 2)
 
     for state0 in states0:
         states0 = [state0] * Model.action_size
@@ -34,59 +33,37 @@ def plotValue(model, experiences, settings):
             actions[j][j] = 1
         states1, values = model.model_run(states0, actions)
 
-        temperatures.append(state0[-1])
-        predicted_off.append(values[:,0][0])
-        predicted_low.append(values[:,0][1])
-        predicted_high.append(values[:,0][2])
-        predicted_ac.append(values[:,0][3])
+        temperature = Experiences.denormalize_temperature(state0[0]) + state0[2]
 
+        off = np.append(off, [[temperature, values[:,0][0]]], axis=0)
+        low = np.append(low, [[temperature, values[:,0][1]]], axis=0)
+        high = np.append(high, [[temperature, values[:,0][2]]], axis=0)
+        ac = np.append(ac, [[temperature, values[:,0][3]]], axis=0)
+
+    return off, low, high, ac
+
+def plotActualValue(model, experiences, settings):
     states0, actions, values, states1 = experiences.get()
-    temperaturesOff = []
-    valuesOff = []
-    temperaturesLow = []
-    valuesLow = []
-    temperaturesHigh = []
-    valuesHigh = []
-    temperaturesAC = []
-    valuesAC = []
+
+    off = np.array([]).reshape(0, 2)
+    low = np.array([]).reshape(0, 2)
+    high = np.array([]).reshape(0, 2)
+    ac = np.array([]).reshape(0, 2)
 
     for i in range(len(values)):
         state0 = states0[i]
         value = values[i]
         action = actions[i]
 
-        if state0[0] != normalize_temperature(target):
-            continue
-
-        if state0[1] != normalize_temperature(0):
-            continue
-
-        if state0[3] - normalize_temperature(target) > 1:
-            continue
-        if state0[3] - normalize_temperature(target) < -1:
-            continue
+        temperature = Experiences.denormalize_temperature(state0[0]) + state0[2]
 
         if action[0] == 1:
-            temperaturesOff.append(state0[-1])
-            valuesOff.append(value)
+            off = np.append(off, [[temperature, value]], axis=0)
         elif action[1] == 1:
-            temperaturesLow.append(state0[-1])
-            valuesLow.append(value)
+            low = np.append(low, [[temperature, value]], axis=0)
         elif action[2] == 1:
-            temperaturesHigh.append(state0[-1])
-            valuesHigh.append(value)
+            high = np.append(high, [[temperature, value]], axis=0)
         elif action[3] == 1:
-            temperaturesAC.append(state0[-1])
-            valuesAC.append(value)
+            ac = np.append(ac, [[temperature, value]], axis=0)
 
-    return temperatures, predicted_off, predicted_low, predicted_high, predicted_ac
-
-
-# ax.plot(temperatures, [x[0] for x in predicted], label='predicted off', color='blue')
-# ax.plot(temperatures, [x[1] for x in predicted], label='predicted low', color='green')
-# ax.plot(temperatures, [x[2] for x in predicted], label='predicted high', color='red')
-# ax.plot(temperatures, [x[3] for x in predicted], label='predicted ac', color='orange')
-# ax.plot(temperaturesOff, valuesOff, '.', label='actual off', color='blue')
-# ax.plot(temperaturesLow, valuesLow, '.', label='actual low', color='green')
-# ax.plot(temperaturesHigh, valuesHigh, '.', label='actual high', color='red')
-# ax.plot(temperaturesAC, valuesAC, '.', label='actual ac', color='orange')
+    return off, low, high, ac

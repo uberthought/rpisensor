@@ -9,15 +9,10 @@ state_size = 3
 action_size = 4
 
 def normalize_temperature(temperature):
-    # max = 30
-    # min = 0
-    # return (temperature - min) / (max - min)
-    # return temperature - 22
     return (temperature - 15) / 100
 
 def create_state(target, temperature, outside):
     return np.array([normalize_temperature(target), normalize_temperature(outside), temperature - target])
-
 
 def getValue(temperature, target, power):
     value = 1 - math.fabs(temperature - target)

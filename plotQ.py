@@ -9,7 +9,7 @@ from Experiences import Experiences
 from Settings import Settings
 
 def plotQ(model, experiences, settings):
-    target = 28.444444444444443
+    target = 28.8889
     min = target - 0.5
     max = target + 0.5
 
@@ -19,20 +19,20 @@ def plotQ(model, experiences, settings):
         experiencesFake.add2(temperature, .5, False, 0, target, 0)
 
     states0, _, _, _ = experiencesFake.get()
-    temperatures = []
-    off = []
-    low = []
-    high = []
-    ac = []
+    off = np.array([]).reshape(0, 2)
+    low = np.array([]).reshape(0, 2)
+    high = np.array([]).reshape(0, 2)
+    ac = np.array([]).reshape(0, 2)
+
 
     for state0 in states0:
 
         hactions = model.dqn_run([state0])[0]
+        temperature = Experiences.denormalize_temperature(state0[0]) + state0[2]
 
-        temperatures.append(state0[-1])
-        off.append(hactions[0] - hactions[0])
-        low.append(hactions[1] - hactions[0])
-        high.append(hactions[2] - hactions[0])
-        ac.append(hactions[3] - hactions[0])
+        off = np.append(off, [[temperature, hactions[0]]], axis=0)
+        low = np.append(low, [[temperature, hactions[1]]], axis=0)
+        high = np.append(high, [[temperature, hactions[2]]], axis=0)
+        ac = np.append(ac, [[temperature, hactions[3]]], axis=0)
 
-    return temperatures, off, low, high, ac
+    return off, low, high, ac

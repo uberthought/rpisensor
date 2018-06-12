@@ -6,6 +6,7 @@ import dash_html_components as html
 import plotly.graph_objs as go
 
 import time
+import numpy as np
 
 from threading import Lock
 
@@ -14,8 +15,8 @@ from network import Model
 from Settings import Settings
 
 from plotQ import plotQ
-from plotState import plotState
-from plotValue import plotValue
+from plotState import plotPredictedState, plotActualState
+from plotValue import plotPredictedValue, plotActualValue
 
 lock = Lock()
 
@@ -43,8 +44,10 @@ app.layout = html.Div(children=[
     dcc.Graph(id='example-graph'),
     dcc.Graph(id='example-graph2'),
     dcc.Graph(id='plotQ'),
-    dcc.Graph(id='plotState'),
-    dcc.Graph(id='plotValue'),
+    dcc.Graph(id='plotActualState'),
+    dcc.Graph(id='plotPredictedState'),
+    dcc.Graph(id='plotActualValue'),
+    dcc.Graph(id='plotPredictedValue'),
 ])
 
 @app.callback(
@@ -123,16 +126,16 @@ def update_output_plotQ(input_value):
     
     lock.acquire()
 
-    temperatures, off, low, high, ac = plotQ(model, experiences, settings)
+    off, low, high, ac = plotQ(model, experiences, settings)
 
     lock.release()
 
     return {
         'data': [
-            go.Scatter(x = temperatures, y = off, name = 'off', line = dict(color='green')),
-            # go.Scatter(x = temperatures, y = low, name = 'low', line = dict(color='yellow')),
-            go.Scatter(x = temperatures, y = high, name = 'high', line = dict(color='red')),
-            # go.Scatter(x = temperatures, y = ac, name = 'ac', line = dict(color='blue')),
+            go.Scatter(x = off[:,0], y = off[:,1], mode = 'markers', name = 'off', line = dict(color='green')),
+            # go.Scatter(x = low[:,0], y = low[:,1], mode = 'markers', name = 'low', line = dict(color='yellow')),
+            go.Scatter(x = high[:,0], y = high[:,1], mode = 'markers', name = 'high', line = dict(color='red')),
+            # go.Scatter(x = ac[:,0], y = ac[:,1], mode = 'markers', name = 'ac', line = dict(color='blue')),
         ],
         'layout': go.Layout(
             title='Q Network Output',
@@ -143,42 +146,84 @@ def update_output_plotQ(input_value):
     }
 
 @app.callback(
-    dash.dependencies.Output(component_id='plotState', component_property='figure'),
+    dash.dependencies.Output(component_id='plotPredictedState', component_property='figure'),
     [dash.dependencies.Input('refresh', 'n_clicks')])
-def update_output_plotState(input_value):
+def update_output_plotPredictedState(input_value):
     
-    temperatures, predicted_off, predicted_low, predicted_high, predicted_ac = plotState(model, experiences, settings)
+    offStates, lowStates, highStates, acStates = plotPredictedState(model, experiences, settings)
 
     return {
         'data': [
-            go.Scatter(x = temperatures, y = predicted_off, mode = 'markers', name = 'off'),
-            # go.Scatter(x = temperatures, y = predicted_low, mode = 'markers', name = 'low'),
-            go.Scatter(x = temperatures, y = predicted_high, mode = 'markers', name = 'high'),
-            # go.Scatter(x = temperatures, y = predicted_ac, mode = 'markers', name = 'ac'),
+            go.Scatter(x = offStates[:,0], y = offStates[:,1], mode = 'markers', name = 'off'),
+            # go.Scatter(x = lowStates[:,0], y = lowStates[:,1], mode = 'markers', name = 'low'),
+            go.Scatter(x = highStates[:,0], y = highStates[:,1], mode = 'markers', name = 'high'),
+            # go.Scatter(x = acStates[:,0], y = acStates[:,1], mode = 'markers', name = 'ac'),
         ],
         'layout': go.Layout(
-            title='State',
+            title='Predicted State',
             xaxis=dict(title='temperature'),
             yaxis=dict(title='temperature'),
         )
     }
 
 @app.callback(
-    dash.dependencies.Output(component_id='plotValue', component_property='figure'),
+    dash.dependencies.Output(component_id='plotActualState', component_property='figure'),
     [dash.dependencies.Input('refresh', 'n_clicks')])
-def update_output_plotValue(input_value):
+def update_output_plotActualState(input_value):
     
-    temperatures, predicted_off, predicted_low, predicted_high, predicted_ac = plotValue(model, experiences, settings)
+    offStates, lowStates, highStates, acStates = plotActualState(model, experiences, settings)
 
     return {
         'data': [
-            go.Scatter(x = temperatures, y = predicted_off, mode = 'markers', name = 'off'),
-            # go.Scatter(x = temperatures, y = predicted_low, mode = 'markers', name = 'low'),
-            go.Scatter(x = temperatures, y = predicted_high, mode = 'markers', name = 'high'),
-            # go.Scatter(x = temperatures, y = predicted_ac, mode = 'markers', name = 'ac'),
+            go.Scatter(x = offStates[:,0], y = offStates[:,1], mode = 'markers', name = 'off'),
+            # go.Scatter(x = lowStates[:,0], y = lowStates[:,1], mode = 'markers', name = 'low'),
+            go.Scatter(x = highStates[:,0], y = highStates[:,1], mode = 'markers', name = 'high'),
+            # go.Scatter(x = acStates[:,0], y = acStates[:,1], mode = 'markers', name = 'ac'),
         ],
         'layout': go.Layout(
-            title='Value',
+            title='Actual State',
+            xaxis=dict(title='temperature'),
+            yaxis=dict(title='temperature'),
+        )
+    }
+
+@app.callback(
+    dash.dependencies.Output(component_id='plotPredictedValue', component_property='figure'),
+    [dash.dependencies.Input('refresh', 'n_clicks')])
+def update_output_plotPredictedValue(input_value):
+    
+    off, low, high, ac = plotPredictedValue(model, experiences, settings)
+
+    return {
+        'data': [
+            go.Scatter(x = off[:,0], y = off[:,1], mode = 'markers', name = 'off'),
+            # go.Scatter(x = low[:,0], y = low[:,1], mode = 'markers', name = 'low'),
+            go.Scatter(x = high[:,0], y = high[:,1], mode = 'markers', name = 'high'),
+            # go.Scatter(x = ac[:,0], y = ac[:,1], mode = 'markers', name = 'ac'),
+        ],
+        'layout': go.Layout(
+            title='Predicted Value',
+            xaxis=dict(title='value'),
+            yaxis=dict(title='temperature'),
+        )
+    }
+
+@app.callback(
+    dash.dependencies.Output(component_id='plotActualValue', component_property='figure'),
+    [dash.dependencies.Input('refresh', 'n_clicks')])
+def update_output_plotActualValue(input_value):
+    
+    off, low, high, ac = plotActualValue(model, experiences, settings)
+
+    return {
+        'data': [
+            go.Scatter(x = off[:,0], y = off[:,1], mode = 'markers', name = 'off'),
+            # go.Scatter(x = low[:,0], y = low[:,1], mode = 'markers', name = 'low'),
+            go.Scatter(x = high[:,0], y = high[:,1], mode = 'markers', name = 'high'),
+            # go.Scatter(x = ac[:,0], y = ac[:,1], mode = 'markers', name = 'ac'),
+        ],
+        'layout': go.Layout(
+            title='Actual Value',
             xaxis=dict(title='value'),
             yaxis=dict(title='temperature'),
         )

@@ -6,8 +6,8 @@ from network import Model
 from Experiences import Experiences
 from Settings import Settings
 
-def plotState(model, experiences, settings):
-    target = settings.target
+def plotPredictedState(model, experiences, settings):
+    target = 28.8889
     min = target - 1
     max = target + 1
 
@@ -16,46 +16,15 @@ def plotState(model, experiences, settings):
     for temperature in np.arange(min, max, .01):
         experiencesFake.add2(temperature, .5, False, 0, target, 0)
 
-    states0, actions, values, states1 = experiences.get()
-    temperaturesOff = []
-    state1Off = []
-    temperaturesLow = []
-    state1Low = []
-    temperaturesHigh = []
-    state1High = []
-    temperaturesAC = []
-    state1AC = []
-
-    for i in range(len(values)):
-        state0 = states0[i]
-        state1 = states1[i]
-        action = actions[i]
-
-        if action[0] == 1:
-            temperaturesOff.append(state0[-1])
-            state1Off.append(state1[-1])
-        elif action[1] == 1:
-            temperaturesLow.append(state0[-1])
-            state1Low.append(state1[-1])
-        elif action[2] == 1:
-            temperaturesHigh.append(state0[-1])
-            state1High.append(state1[-1])
-        elif action[3] == 1:
-            temperaturesAC.append(state0[-1])
-            state1AC.append(state1[-1])
-
     states0, actions, values, states1 = experiencesFake.get()
 
-    temperatures = []
-    predicted_off = []
-    predicted_low = []
-    predicted_high = []
-    predicted_ac = []
+    off = np.array([]).reshape(0, 2)
+    low = np.array([]).reshape(0, 2)
+    high = np.array([]).reshape(0, 2)
+    ac = np.array([]).reshape(0, 2)
 
     for i in range(len(values)):
         state0 = states0[i]
-
-        temperature0 = state0[-1]
 
         hstates0 = [state0] * Model.action_size
         hactions = np.zeros((Model.action_size, Model.action_size))
@@ -63,21 +32,37 @@ def plotState(model, experiences, settings):
             hactions[j][j] = 1
         hstates1, hvalues = model.model_run(hstates0, hactions)
 
-        temperatures.append(state0[-1])
-        predicted_off.append(hstates1[:,-1][0])
-        predicted_low.append(hstates1[:,-1][1])
-        predicted_high.append(hstates1[:,-1][2])
-        predicted_ac.append(hstates1[:,-1][3])
+        temperature = Experiences.denormalize_temperature(state0[0]) + state0[2]
 
-    return temperatures, predicted_off, predicted_low, predicted_high, predicted_ac
+        off = np.append(off, [[temperature, hstates1[:,-1][0]]], axis=0)
+        low = np.append(low, [[temperature, hstates1[:,-1][1]]], axis=0)
+        high = np.append(high, [[temperature, hstates1[:,-1][2]]], axis=0)
+        ac = np.append(ac, [[temperature, hstates1[:,-1][3]]], axis=0)
+
+    return off, low, high, ac
 
 
-    # ax.plot(temperaturesOff, state1Off, '.', label='off', color='blue')
-    # ax.plot(temperaturesLow, state1Low, '.', label='low', color='green')
-    # ax.plot(temperaturesHigh, state1High, '.', label='high', color='red')
-    # ax.plot(temperaturesAC, state1AC, '.', label='ac', color='orange')
+def plotActualState(model, experiences, settings):
+    states0, actions, values, states1 = experiences.get()
+    off = np.array([]).reshape(0, 2)
+    low = np.array([]).reshape(0, 2)
+    high = np.array([]).reshape(0, 2)
+    ac = np.array([]).reshape(0, 2)
 
-    # ax.plot(temperatures, [x[0] for x in predicted], label='predicted off', color='blue')
-    # ax.plot(temperatures, [x[1] for x in predicted], label='predicted low', color='green')
-    # ax.plot(temperatures, [x[2] for x in predicted], label='predicted high', color='red')
-    # ax.plot(temperatures, [x[3] for x in predicted], label='predicted ac', color='orange')
+    for i in range(len(values)):
+        state0 = states0[i]
+        state1 = states1[i]
+        action = actions[i]
+
+        temperature = Experiences.denormalize_temperature(state0[0]) + state0[2]
+
+        if action[0] == 1:
+            off = np.append(off, [[temperature, state1[-1]]], axis=0)
+        elif action[1] == 1:
+            low = np.append(low, [[temperature, state1[-1]]], axis=0)
+        elif action[2] == 1:
+            high = np.append(high, [[temperature, state1[-1]]], axis=0)
+        elif action[3] == 1:
+            ac = np.append(ac, [[temperature, state1[-1]]], axis=0)
+
+    return off, low, high, ac

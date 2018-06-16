@@ -8,11 +8,6 @@ import math
 
 from Settings import Settings
 from Sensor import Sensor
-from Solenoid import Solenoid
-
-from online_train import OnlineTrainer
-
-trainer = OnlineTrainer()
 
 class WebServer(BaseHTTPRequestHandler):
 
@@ -107,8 +102,6 @@ class WebServer(BaseHTTPRequestHandler):
 
     def powerButton(self):
         Settings.setOn(not Settings.getOn())
-        solenoid = Solenoid()
-        solenoid.switchOff()
         self.showRoot(self.getState())
 
     def gatheringButton(self):
@@ -116,7 +109,6 @@ class WebServer(BaseHTTPRequestHandler):
         self.showRoot(self.getState())
 
     def trainingButton(self):
-        Settings.setTraining(not Settings.getTraining())
         self.showRoot(self.getState())
 
     def exploringButton(self):
@@ -136,13 +128,9 @@ class WebServer(BaseHTTPRequestHandler):
 
         try:
             sensor = Sensor()
-            solenoid = Solenoid()
             temperature, _, _, _ = sensor.gather()
             f = temperature * 9 / 5 + 32
             f = math.floor(f * 10) / 10
-
-            pending = trainer.pending_experience_count()
-
 
             message = 'Current temperature is ' + str(f)
 
@@ -151,11 +139,7 @@ class WebServer(BaseHTTPRequestHandler):
             else:
                 message += '</br>Heater is not running'
 
-            message += '</br>Pending experiences to send ' + str(pending)
-
-            message += '</br>Target ' + str(trainer.target)
-            message += '</br>Temperature ' + str(trainer.temperature)
-            message += '</br>Action ' + str(trainer.action) + ' ' + trainer.reason
+            # message += '</br>Temperature ' + str(trainer.temperature)
             
         except (EOFError, Exception):
             pass
@@ -165,7 +149,7 @@ class WebServer(BaseHTTPRequestHandler):
     def run(id):
 
         hostName = ''
-        hostPort = 80
+        hostPort = 8080
 
         webServer = HTTPServer((hostName, hostPort), WebServer)
 
@@ -181,14 +165,6 @@ webServerThread.start()
 
 while True:
     start = time.time()
-
-    if Settings.getOn():
-
-        if Settings.getGathering():
-            trainer.run_once()
-
-        if Settings.getTraining():
-            trainer.send_experiences()
 
     elapse = time.time() - start
 

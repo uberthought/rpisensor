@@ -8,6 +8,14 @@ import math
 
 from Settings import Settings
 from Sensor import Sensor
+from Experiences import Experiences
+
+settings = Settings()
+sensor = Sensor()
+experiences = Experiences()
+
+if settings.on:
+    temperature, humidity, timestamp = sensor.gather()
 
 class WebServer(BaseHTTPRequestHandler):
 
@@ -29,23 +37,16 @@ class WebServer(BaseHTTPRequestHandler):
 
         print(postvars)
 
-        if b'gathering' in postvars.keys():
-            self.gatheringButton()
-        if b'training' in postvars.keys():
-            self.trainingButton()
-        if b'warmer' in postvars.keys():
-            self.warmerButton()
-        if b'cooler' in postvars.keys():
-            self.coolerButton()
         if b'power' in postvars.keys():
-            self.powerButton()
-        if b'exploring' in postvars.keys():
-            self.exploringButton()
-        if b'less_exploring' in postvars.keys():
-            self.less_exploringButton()
-        if b'more_exploring' in postvars.keys():
-            self.more_exploringButton()
-
+            settings.on = not settings.on
+        if b'less_collecting' in postvars.keys():
+            settings.collection_rate = settings.collection_rate + 1
+        if b'more_collecting' in postvars.keys():
+            if settings.collection_rate >= 6:
+                settings.collection_rate = settings.collection_rate - 1
+            
+        settings.save()
+        self.showRoot(self.getState())
 
     def showRoot(self, message):
 
@@ -57,89 +58,31 @@ class WebServer(BaseHTTPRequestHandler):
             self.wfile.write(bytes(indexfile.read(), 'utf-8'))
 
         self.wfile.write(bytes('<script>', 'utf-8'))
-    
-        self.wfile.write(bytes('document.getElementById("message").innerHTML = "' + message + '";', 'utf-8'))
-    
-        self.wfile.write(bytes('document.getElementById("target").innerHTML = "' + str(Settings.getTargetF()) + '";', 'utf-8'))
-
-        self.wfile.write(bytes('document.getElementById("exploration_rate").innerHTML = "' + str(Settings.getExplorationRate()) + '";', 'utf-8'))
-    
-        if Settings.getGathering():
-            self.wfile.write(bytes('document.getElementById("gathering").value = "Stop Gathering";', 'utf-8'))
-        else:
-            self.wfile.write(bytes('document.getElementById("gathering").value = "Start Gathering";', 'utf-8'))
-    
-        if Settings.getExploring():
-            self.wfile.write(bytes('document.getElementById("exploring").value = "Stop Exploring";', 'utf-8'))
-        else:
-            self.wfile.write(bytes('document.getElementById("exploring").value = "Start Exploring";', 'utf-8'))
-    
-        if Settings.getTraining():
-            self.wfile.write(bytes('document.getElementById("training").value = "Stop Sending";', 'utf-8'))
-        else:
-            self.wfile.write(bytes('document.getElementById("training").value = "Start Sending";', 'utf-8'))
-    
-        if Settings.getOn():
+        if settings.on:
             self.wfile.write(bytes('document.getElementById("power").value = "Turn Off";', 'utf-8'))
-            self.wfile.write(bytes('document.getElementById("gathering").disabled = false;', 'utf-8'))
-            self.wfile.write(bytes('document.getElementById("training").disabled = false;', 'utf-8'))
-            self.wfile.write(bytes('document.getElementById("exploring").disabled = false;', 'utf-8'))
         else:
             self.wfile.write(bytes('document.getElementById("power").value = "Turn On";', 'utf-8'))
-            self.wfile.write(bytes('document.getElementById("gathering").disabled = true;', 'utf-8'))
-            self.wfile.write(bytes('document.getElementById("training").disabled = true;', 'utf-8'))
-            self.wfile.write(bytes('document.getElementById("exploring").disabled = true;', 'utf-8'))
-    
+        self.wfile.write(bytes('document.getElementById("collection_rate").innerHTML = "' + str(settings.collection_rate) + 's";', 'utf-8'))
+        self.wfile.write(bytes('document.getElementById("message").innerHTML = "' + message + '";', 'utf-8'))
         self.wfile.write(bytes('</script>', 'utf-8'))
-
-    def warmerButton(self):
-        Settings.setTargetF(Settings.getTargetF() + 1)
-        self.showRoot(self.getState())
-
-    def coolerButton(self):
-        Settings.setTargetF(Settings.getTargetF() - 1)
-        self.showRoot(self.getState())
-
-    def powerButton(self):
-        Settings.setOn(not Settings.getOn())
-        self.showRoot(self.getState())
-
-    def gatheringButton(self):
-        Settings.setGathering(not Settings.getGathering())
-        self.showRoot(self.getState())
-
-    def trainingButton(self):
-        self.showRoot(self.getState())
-
-    def exploringButton(self):
-        Settings.setExploring(not Settings.getExploring())
-        self.showRoot(self.getState())
-
-    def less_exploringButton(self):
-        Settings.setExplorationRate(Settings.getExplorationRate() - 0.1)
-        self.showRoot(self.getState())
-
-    def more_exploringButton(self):
-        Settings.setExplorationRate(Settings.getExplorationRate() + 0.1)
-        self.showRoot(self.getState())
 
     def getState(self):
         message = ''
 
         try:
-            sensor = Sensor()
-            temperature, _, _, _ = sensor.gather()
-            f = temperature * 9 / 5 + 32
-            f = math.floor(f * 10) / 10
+            if settings.on:
+                f = temperature * 9 / 5 + 32
+                f = math.floor(f * 10) / 10
 
-            message = 'Current temperature is ' + str(f)
+                message = 'Temperature ' + str(f) + "F"
+                message += '</br>Humidity ' + str(humidity) + "%"
+                message += '</br>Timestamp ' + str(timestamp)
+                message += '</br>'
+                message += '</br>Experiences ' + str(len(experiences.temperatures))
+                message += '</br>Elapsed ' + str(elapse) + "s"
 
-            if solenoid.isOn():
-                message += '</br>Heater is running'
             else:
-                message += '</br>Heater is not running'
-
-            # message += '</br>Temperature ' + str(trainer.temperature)
+                message = "Not recording"
             
         except (EOFError, Exception):
             pass
@@ -147,7 +90,6 @@ class WebServer(BaseHTTPRequestHandler):
         return message
 
     def run(id):
-
         hostName = ''
         hostPort = 8080
 
@@ -166,9 +108,12 @@ webServerThread.start()
 while True:
     start = time.time()
 
+    if settings.on:
+        temperature, humidity, timestamp = sensor.gather()
+        experiences.add(temperature, humidity, timestamp)
+        experiences.save()
+
     elapse = time.time() - start
 
-    # print(elapse)
-
-    if elapse < 5:
-        time.sleep(5 - elapse)
+    if elapse < settings.collection_rate:
+        time.sleep(settings.collection_rate - elapse)

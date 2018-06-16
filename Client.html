@@ -1,0 +1,44 @@
+<html>
+    
+    <head>
+        <meta http-equiv="refresh" content="5;url=/" />
+        <title>Weather Control Central</title>
+        <style>
+            body {
+                font-size: 150%;
+            }
+
+            input[type=submit] {
+                font-size: 100%;
+            }
+        </style>
+    </head>
+
+    <body>
+
+        <form method="post">
+            </br>
+            <input type="submit" id="power" name="power" value="Turn On" />
+            </br>
+            <input type="submit" id="cooler" name="cooler" value="Cooler" />
+            <div id=target style="display:inline;">75</div>
+            <input type="submit" id="warmer" name="warmer" value="Warmer" />
+            </br>
+            </br>
+            <input type="submit" id="gathering" name="gathering" value="Start Gathering" />
+            </br>
+            <input type="submit" id="exploring" name="exploring" value="Start Exploring" />
+            </br>
+            <input type="submit" id="less_exploring" name="less_exploring" value="Less" />
+            <div id=exploration_rate style="display:inline;">75</div>
+            <input type="submit" id="more_exploring" name="more_exploring" value="More" />
+            </br>
+            <input type="submit" id="training" name="training" value="Start Training" />
+            </br>
+        </form>
+
+        <div id=message></div>
+        
+    </body>
+
+</html>

@@ -4,6 +4,7 @@ import numpy as np
 import math
 import random
 import threading
+import csv
 
 class Experiences:
     def __init__(self):
@@ -36,3 +37,10 @@ class Experiences:
         self.temperatures = np.concatenate((self.temperatures, [temperature]))
         self.humidities = np.concatenate((self.humidities, [humidity]))
         self.timestamps = np.concatenate((self.timestamps, [timestamp]))
+
+    def saveCSV(self):
+        with open('experiences.csv', 'w', newline='') as csvfile:
+            spamwriter = csv.writer(csvfile, delimiter=',', quotechar='"', quoting=csv.QUOTE_NONNUMERIC)
+            spamwriter.writerow(['timestamps', 'temperatures', 'humidities'])
+            for x in range(len(self.timestamps)):
+                spamwriter.writerow([self.timestamps[x], self.temperatures[x], self.humidities[x]])

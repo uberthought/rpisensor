@@ -5,7 +5,6 @@ import numpy as np
 
 experiences = Experiences()
 
-training_data = experiences.get()
+print('experiences ', len(experiences.timestamps))
 
-print(training_data)
-print('experiences ', len(training_data[0]))
+experiences.saveCSV()

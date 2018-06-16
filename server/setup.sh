@@ -11,9 +11,6 @@ pip3 install \
 	numpy
 
 pip3 install \
-	tensorflow
-	
-pip3 install \
 	dash \
 	dash_renderer \
 	dash_core_components \

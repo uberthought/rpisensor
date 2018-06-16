@@ -35,8 +35,8 @@ app.layout = html.Div(children=[
         ###### This is an <h6> tag
     ''', id='status'),
 
-    dcc.Graph(id='example-graph'),
-    dcc.Graph(id='example-graph2'),
+    dcc.Graph(id='graph-2d'),
+    dcc.Graph(id='graph-3d', style={'height': '50em'}),
 ])
 
 @app.callback(
@@ -54,55 +54,64 @@ def update_status(input_value):
     return 'Total Experiences: ' + str(len(experiences.timestamps))
 
 @app.callback(
-    dash.dependencies.Output(component_id='example-graph', component_property='figure'),
+    dash.dependencies.Output(component_id='graph-2d', component_property='figure'),
     [dash.dependencies.Input('refresh', 'n_clicks')])
 def update_output_div(input_value):
 
     lock.acquire()
 
-    temperatures = experiences.states0[:,-1]
     timestamps = experiences.timestamps
     temperatures = experiences.temperatures
-    targets = experiences.targets
+    humidities = experiences.humidities
 
     lock.release()
 
     return {
         'data': [
-            go.Scatter(x = timestamps, y = temperatures, name = 'temperature'),
-            go.Scatter(x = timestamps, y = experiences.targets, name = 'target'),
+            go.Scatter(x = timestamps, y = temperatures, name = 'temperature', yaxis = 'y1'),
+            go.Scatter(x = timestamps, y = humidities, name = 'humidity', yaxis = 'y2'),
         ],
         'layout': go.Layout(
-            title='Double Y Axis Example',
-            yaxis=dict(title='temperature'),
+            title='2D Temperature, Humidity vs Time',
+            yaxis=dict(title='Celcius'),
+            yaxis2=dict(
+                title='Relative Humidity',
+                overlaying='y',
+                side='right'
+            )
         )
     }
 
 @app.callback(
-    dash.dependencies.Output(component_id='example-graph2', component_property='figure'),
+    dash.dependencies.Output(component_id='graph-3d', component_property='figure'),
     [dash.dependencies.Input('refresh', 'n_clicks')])
 def update_output_div2(input_value):
 
     lock.acquire()
 
     timestamps = experiences.timestamps
-    powers = experiences.powers
-    values = experiences.values[:,0]
+    temperatures = experiences.temperatures
+    humidities = experiences.humidities
 
     lock.release()
 
+    offsets = [x - timestamps[0] for x in timestamps]
+    offsets = [x.total_seconds() for x in offsets]
+
     return {
         'data': [
-            go.Scatter(x = timestamps, y = powers, mode = 'markers', name = 'power', yaxis='y1'),
-            go.Scatter(x = timestamps, y = values, name = 'value', yaxis='y2'),
+            # go.Scatter(x = timestamps, y = powers, mode = 'markers', name = 'power', yaxis='y1'),
+            # go.Scatter(x = timestamps, y = values, name = 'value', yaxis='y2'),
+            # go.Scatter(x = timestamps, y = temperatures),
+            # go.Scatter(x = timestamps, y = humidities),
+            go.Scatter3d(x = offsets, y = humidities, z = temperatures, mode = 'markers'),
         ],
         'layout': go.Layout(
-            title='power level',
-            yaxis=dict(title='value'),
-            yaxis2=dict(
-                title='power level',
-                overlaying='y',
-                side='right'
+            title='3D Temperature, Humidity, Time',
+            scene = dict(
+                xaxis=dict(title='Seconds'),
+                yaxis=dict(title='Relative Humidity'),
+                zaxis=dict(title='Celcius'),
             )
         )
     }

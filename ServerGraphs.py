@@ -13,18 +13,16 @@ from threading import Lock
 from Experiences import Experiences
 from Settings import Settings
 
-lock = Lock()
-
 experiences = Experiences()
 settings = Settings()
 
 app = dash.Dash()
 
 app.layout = html.Div(children=[
-    html.H1(children='Hello Dash'),
+    html.H1(children='Example Temperature and Humidity Sensor'),
 
     html.Div(children='''
-        Dash: A web application framework for Python.
+        This is an example app that displays the results of temperature and humidity sensor collection.
     '''),
 
     html.Button('Refresh', id='refresh'),
@@ -36,7 +34,7 @@ app.layout = html.Div(children=[
     ''', id='status'),
 
     dcc.Graph(id='graph-2d'),
-    dcc.Graph(id='graph-3d', style={'height': '50em'}),
+    # dcc.Graph(id='graph-3d', style={'height': '50em'}),
 ])
 
 @app.callback(
@@ -44,27 +42,21 @@ app.layout = html.Div(children=[
     [dash.dependencies.Input('refresh', 'n_clicks')])
 def update_status(input_value):
 
-    lock.acquire()
-
     experiences = Experiences()
-    settings = Settings()
 
-    lock.release()
+    total = len(experiences.timestamps)
+    last = experiences.timestamps[-1]
 
-    return 'Total Experiences: ' + str(len(experiences.timestamps))
+    return 'Last Timestamp: ' + str(last) + '  Total: ' + str(total)
 
 @app.callback(
     dash.dependencies.Output(component_id='graph-2d', component_property='figure'),
     [dash.dependencies.Input('refresh', 'n_clicks')])
 def update_output_div(input_value):
 
-    lock.acquire()
-
     timestamps = experiences.timestamps
     temperatures = experiences.temperatures
     humidities = experiences.humidities
-
-    lock.release()
 
     return {
         'data': [
@@ -82,39 +74,31 @@ def update_output_div(input_value):
         )
     }
 
-@app.callback(
-    dash.dependencies.Output(component_id='graph-3d', component_property='figure'),
-    [dash.dependencies.Input('refresh', 'n_clicks')])
-def update_output_div2(input_value):
+# @app.callback(
+#     dash.dependencies.Output(component_id='graph-3d', component_property='figure'),
+#     [dash.dependencies.Input('refresh', 'n_clicks')])
+# def update_output_div2(input_value):
 
-    lock.acquire()
+#     timestamps = experiences.timestamps
+#     temperatures = experiences.temperatures
+#     humidities = experiences.humidities
 
-    timestamps = experiences.timestamps
-    temperatures = experiences.temperatures
-    humidities = experiences.humidities
+#     offsets = [x - timestamps[0] for x in timestamps]
+#     offsets = [x.total_seconds() for x in offsets]
 
-    lock.release()
-
-    offsets = [x - timestamps[0] for x in timestamps]
-    offsets = [x.total_seconds() for x in offsets]
-
-    return {
-        'data': [
-            # go.Scatter(x = timestamps, y = powers, mode = 'markers', name = 'power', yaxis='y1'),
-            # go.Scatter(x = timestamps, y = values, name = 'value', yaxis='y2'),
-            # go.Scatter(x = timestamps, y = temperatures),
-            # go.Scatter(x = timestamps, y = humidities),
-            go.Scatter3d(x = offsets, y = humidities, z = temperatures, mode = 'markers'),
-        ],
-        'layout': go.Layout(
-            title='3D Temperature, Humidity, Time',
-            scene = dict(
-                xaxis=dict(title='Seconds'),
-                yaxis=dict(title='Relative Humidity'),
-                zaxis=dict(title='Celcius'),
-            )
-        )
-    }
+#     return {
+#         'data': [
+#             go.Scatter3d(x = offsets, y = humidities, z = temperatures, mode = 'markers'),
+#         ],
+#         'layout': go.Layout(
+#             title='3D Temperature, Humidity, Time',
+#             scene = dict(
+#                 xaxis=dict(title='Seconds'),
+#                 yaxis=dict(title='Relative Humidity'),
+#                 zaxis=dict(title='Celcius'),
+#             )
+#         )
+#     }
 
 if __name__ == '__main__':
     app.run_server(debug=True, host='localhost')

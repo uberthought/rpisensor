@@ -9,11 +9,16 @@ import math
 from Settings import Settings
 from Sensor import Sensor
 from Experiences import Experiences
+from Communication import Communication
 
 settings = Settings()
 sensor = Sensor()
 experiences = Experiences()
+communication = Communication()
 
+elapse = 0
+send_message = ''
+temperature, humidity, timestamp = 0, 0, ''
 if settings.on:
     temperature, humidity, timestamp = sensor.gather()
 
@@ -80,11 +85,13 @@ class WebServer(BaseHTTPRequestHandler):
                 message += '</br>'
                 message += '</br>Experiences ' + str(len(experiences.temperatures))
                 message += '</br>Elapsed ' + str(elapse) + "s"
+                message += '</br>Sending ' + send_message
 
             else:
                 message = "Not recording"
             
-        except (EOFError, Exception):
+        except (EOFError, Exception) as e:
+            message = e.strerror
             pass
 
         return message
@@ -118,8 +125,10 @@ while True:
             try:
                 communication = Communication()
                 communication.send('localhost', experiences)
+                send_message = 'Sent ' + len(experiences.timestamp)
                 experiences.reset()
-            except (ConnectionRefusedError, ConnectionResetError):
+            except (ConnectionRefusedError, ConnectionResetError) as e:
+                send_message = e.strerror
                 pass
 
 

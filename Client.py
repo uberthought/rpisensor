@@ -114,6 +114,15 @@ while True:
         experiences.save()
         experiences.saveCSV()
 
+        if len(experiences.timestamps) > 1:
+            try:
+                communication = Communication()
+                communication.send('localhost', experiences)
+                experiences.reset()
+            except (ConnectionRefusedError, ConnectionResetError):
+                pass
+
+
     elapse = time.time() - start
 
     if elapse < settings.collection_rate:

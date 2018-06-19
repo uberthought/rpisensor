@@ -3,24 +3,26 @@
 from threading import Thread
 from http.server import BaseHTTPRequestHandler, HTTPServer
 import time
+import datetime
 import cgi
 import math
 
 from Settings import Settings
-from Sensor import Sensor
+# from Sensor import Sensor
 from Experiences import Experiences
 from Communication import Communication
 
 settings = Settings()
-sensor = Sensor()
-experiences = Experiences()
+# sensor = Sensor()
+experiences = Experiences('client_experiences')
+experiences.load()
 communication = Communication()
 
 elapse = 0
 send_message = ''
-temperature, humidity, timestamp = 0, 0, ''
-if settings.on:
-    temperature, humidity, timestamp = sensor.gather()
+temperature, humidity, timestamp = 0, 0, datetime.datetime.now()
+# if settings.on:
+#     temperature, humidity, timestamp = sensor.gather()
 
 class WebServer(BaseHTTPRequestHandler):
 
@@ -116,7 +118,7 @@ while True:
     start = time.time()
 
     if settings.on:
-        temperature, humidity, timestamp = sensor.gather()
+        # temperature, humidity, timestamp = sensor.gather()
         experiences.add(temperature, humidity, timestamp)
         experiences.save()
         experiences.saveCSV()
@@ -125,12 +127,11 @@ while True:
             try:
                 communication = Communication()
                 communication.send('localhost', experiences)
-                send_message = 'Sent ' + len(experiences.timestamp)
+                send_message = 'Sent ' + str(len(experiences.timestamps))
                 experiences.reset()
+                experiences.save()
             except (ConnectionRefusedError, ConnectionResetError) as e:
                 send_message = e.strerror
-                pass
-
 
     elapse = time.time() - start
 

@@ -11,8 +11,9 @@ from Experiences import Experiences
 from Settings import Settings
 
 settings = Settings()
-experiences = Experiences()
-communication = Communication()
+
+elapse = 0
+receive_message = ''
 
 class WebServer(BaseHTTPRequestHandler):
 
@@ -55,19 +56,27 @@ class WebServer(BaseHTTPRequestHandler):
         self.wfile.write(bytes('</script>', 'utf-8'))
 
     def getState(self):
-        experiences = Experiences()
+        global receive_message
+        global elapse
+
+        experiences = Experiences('server_experiences')
+        experiences.load()
         count = len(experiences.timestamps)
         message = 'Collected ' + str(count) + ' experiences.'
         if count > 0:
             timestamp = experiences.timestamps[-1]
             message += '<br>'
             message += 'Last experience was ' + timestamp.strftime('%H:%M:%S') + "(UTC)"
+            message += '</br>'
+            message += '</br>Experiences ' + str(len(experiences.temperatures))
+            message += '</br>Elapsed ' + str(elapse) + "s"
+            message += '</br>Receiving ' + receive_message
 
         return message
 
     def run():
         hostName = ''
-        hostPort = 8080
+        hostPort = 8081
 
         webServer = HTTPServer((hostName, hostPort), WebServer)
 
@@ -79,12 +88,27 @@ class WebServer(BaseHTTPRequestHandler):
         webServer.server_close()
 
 def runCommunications():
+    global receive_message
+    global elapse
+    
+    communication = Communication()
+
     while True:
+        start = time.time()
+
         if settings.on:
-            experiences = communication.receive('')
-            experiences.append()
+            try:
+                experiences2 = communication.receive('')
+                count = len(experiences2.timestamps)
+                experiences2.append('server_experiences')
+                receive_message = 'Received ' + str(count)
+            except (ConnectionRefusedError, ConnectionResetError) as e:
+                receive_message = e.strerror
         else:
-            time.sleep(1)
+            receive_message = ''
+            time.sleep(.1)
+
+        elapse = time.time() - start
 
     
 webServerThread = Thread(target=WebServer.run)

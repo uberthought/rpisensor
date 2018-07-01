@@ -7,15 +7,18 @@ import threading
 import csv
 
 class Experiences:
-    def __init__(self):
-        if os.path.exists('experiences.p'):
-            saved = pickle.load(open("experiences.p", "rb"))
+    def __init__(self, filename='experiences'):
+        self.pickle_filename = filename + '.p'
+        self.csv_filename = filename + '.csv'
+
+    def load(self):
+        if os.path.exists(self.pickle_filename):
+            saved = pickle.load(open(self.pickle_filename, "rb"))
             self.temperatures = saved.temperatures
             self.humidities = saved.humidities
             self.timestamps = saved.timestamps
         else:
             self.reset()
-            self.save()
 
     def reset(self):
         self.temperatures = np.array([], dtype=np.float)
@@ -23,15 +26,16 @@ class Experiences:
         self.timestamps = np.array([], dtype=np.str)
 
     def save(self):
-        pickle.dump(self, open("experiences.p", "wb"))
+        pickle.dump(self, open(self.pickle_filename, "wb"))
 
-    def append(self):
-        if os.path.exists('experiences.p'):
-            saved = pickle.load(open("experiences.p", "rb"))
+    def append(self, filename='experiences'):
+        pickle_filename = filename + '.p'
+        if os.path.exists(pickle_filename):
+            saved = pickle.load(open(pickle_filename, "rb"))
             self.temperatures = np.append(saved.temperatures, self.temperatures)
             self.humidities = np.append(saved.humidities, self.humidities)
             self.timestamps = np.append(saved.timestamps, self.timestamps)
-        pickle.dump(self, open("experiences.p", "wb"))
+        pickle.dump(self, open(pickle_filename, "wb"))
 
     def add(self, temperature, humidity, timestamp):
         self.temperatures = np.concatenate((self.temperatures, [temperature]))
@@ -39,7 +43,7 @@ class Experiences:
         self.timestamps = np.concatenate((self.timestamps, [timestamp]))
 
     def saveCSV(self):
-        with open('experiences.csv', 'w', newline='') as csvfile:
+        with open(self.csv_filename, 'w', newline='') as csvfile:
             spamwriter = csv.writer(csvfile, delimiter=',', quotechar='"', quoting=csv.QUOTE_NONNUMERIC)
             spamwriter.writerow(['timestamps', 'temperatures', 'humidities'])
             for x in range(len(self.timestamps)):

@@ -5,4 +5,4 @@ source ./data
 if [ ! -d ~/$DIRECTORY ]; then
     mkdir ~/$DIRECTORY
 fi
-sshfs uberthought@$ADDRESS:. ~/$DIRECTORY
+sshfs pi@$ADDRESS:. ~/$DIRECTORY

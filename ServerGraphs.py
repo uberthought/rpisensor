@@ -13,7 +13,9 @@ from threading import Lock
 from Experiences import Experiences
 from Settings import Settings
 
-experiences = Experiences()
+experiences = Experiences('server_experiences')
+experiences.load()
+
 settings = Settings()
 
 app = dash.Dash()
@@ -33,7 +35,8 @@ app.layout = html.Div(children=[
         ###### This is an <h6> tag
     ''', id='status'),
 
-    dcc.Graph(id='graph-2d'),
+    dcc.Graph(id='graph-2d', style={'height': '20em'}),
+    dcc.Graph(id='graph-pm-2d', style={'height': '20em'}),
     # dcc.Graph(id='graph-3d', style={'height': '50em'}),
 ])
 
@@ -42,7 +45,8 @@ app.layout = html.Div(children=[
     [dash.dependencies.Input('refresh', 'n_clicks')])
 def update_status(input_value):
 
-    experiences = Experiences()
+    experiences = Experiences('server_experiences')
+    experiences.load()
 
     total = len(experiences.timestamps)
     last = experiences.timestamps[-1]
@@ -71,6 +75,26 @@ def update_output_div(input_value):
                 overlaying='y',
                 side='right'
             )
+        )
+    }
+
+@app.callback(
+    dash.dependencies.Output(component_id='graph-pm-2d', component_property='figure'),
+    [dash.dependencies.Input('refresh', 'n_clicks')])
+def update_output_pm_div(input_value):
+
+    timestamps = experiences.timestamps
+    pm25s = experiences.pm25s
+    pm10s = experiences.pm10s
+
+    return {
+        'data': [
+            go.Scatter(x = timestamps, y = pm25s, name = 'PM2.5'),
+            go.Scatter(x = timestamps, y = pm10s, name = 'PM10'),
+        ],
+        'layout': go.Layout(
+            title='2D PM2.5, PM10 vs Time',
+            yaxis=dict(title='?'),
         )
     }
 

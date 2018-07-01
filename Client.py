@@ -8,12 +8,12 @@ import cgi
 import math
 
 from Settings import Settings
-# from Sensor import Sensor
+from Sensor import Sensor
 from Experiences import Experiences
 from Communication import Communication
 
 settings = Settings()
-# sensor = Sensor()
+sensor = Sensor()
 experiences = Experiences('client_experiences')
 experiences.load()
 communication = Communication()
@@ -21,8 +21,8 @@ communication = Communication()
 elapse = 0
 send_message = ''
 temperature, humidity, timestamp = 0, 0, datetime.datetime.now()
-# if settings.on:
-#     temperature, humidity, timestamp = sensor.gather()
+if settings.on:
+    timestamp, temperature, humidity, pm25, pm10 = sensor.gather()
 
 class WebServer(BaseHTTPRequestHandler):
 
@@ -84,8 +84,10 @@ class WebServer(BaseHTTPRequestHandler):
                 message = 'Temperature ' + str(f) + "F"
                 message += '</br>Humidity ' + str(humidity) + "%"
                 message += '</br>Timestamp ' + str(timestamp)
+                message += '</br>PM25 ' + str(pm25)
+                message += '</br>PM10 ' + str(pm10)
                 message += '</br>'
-                message += '</br>Experiences ' + str(len(experiences.temperatures))
+                message += '</br>Experiences ' + str(len(experiences.timestamps))
                 message += '</br>Elapsed ' + str(elapse) + "s"
                 message += '</br>Sending ' + send_message
 
@@ -118,8 +120,8 @@ while True:
     start = time.time()
 
     if settings.on:
-        # temperature, humidity, timestamp = sensor.gather()
-        experiences.add(temperature, humidity, timestamp)
+        timestamp, temperature, humidity, pm25, pm10 = sensor.gather()
+        experiences.add(timestamp, temperature, humidity, pm25, pm10)
         experiences.save()
         experiences.saveCSV()
 

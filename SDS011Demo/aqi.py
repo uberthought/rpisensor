@@ -5,7 +5,7 @@
 from __future__ import print_function
 import serial, struct, sys, time, json
 
-DEBUG = 1
+DEBUG = 0
 CMD_MODE = 2
 CMD_QUERY_DATA = 4
 CMD_DEVICE_ID = 5

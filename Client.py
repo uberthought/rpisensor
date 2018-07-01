@@ -112,6 +112,7 @@ while True:
         temperature, humidity, timestamp = sensor.gather()
         experiences.add(temperature, humidity, timestamp)
         experiences.save()
+        experiences.saveCSV()
 
     elapse = time.time() - start
 

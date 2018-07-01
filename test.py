@@ -47,7 +47,7 @@ while True:
     solenoid.setPower(action)
 
     simulation.step()
-    temperature, humidity, timestamp, outside = sensor.gather()
+    timestamp, temperature, humidity, pm25, pm10 = sensor.gather()
     experiences.add(temperature, humidity, solenoid.power, timestamp, target, outside)
     state0, _, value, _ = experiences.last()
 

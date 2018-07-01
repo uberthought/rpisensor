@@ -3,19 +3,26 @@
 from threading import Thread
 from http.server import BaseHTTPRequestHandler, HTTPServer
 import time
+import datetime
 import cgi
 import math
 
 from Settings import Settings
-from Sensor import Sensor
+# from Sensor import Sensor
 from Experiences import Experiences
+from Communication import Communication
 
 settings = Settings()
-sensor = Sensor()
-experiences = Experiences()
+# sensor = Sensor()
+experiences = Experiences('client_experiences')
+experiences.load()
+communication = Communication()
 
-if settings.on:
-    temperature, humidity, timestamp = sensor.gather()
+elapse = 0
+send_message = ''
+temperature, humidity, timestamp = 0, 0, datetime.datetime.now()
+# if settings.on:
+#     temperature, humidity, timestamp = sensor.gather()
 
 class WebServer(BaseHTTPRequestHandler):
 
@@ -80,11 +87,13 @@ class WebServer(BaseHTTPRequestHandler):
                 message += '</br>'
                 message += '</br>Experiences ' + str(len(experiences.temperatures))
                 message += '</br>Elapsed ' + str(elapse) + "s"
+                message += '</br>Sending ' + send_message
 
             else:
                 message = "Not recording"
             
-        except (EOFError, Exception):
+        except (EOFError, Exception) as e:
+            message = e.strerror
             pass
 
         return message
@@ -109,10 +118,20 @@ while True:
     start = time.time()
 
     if settings.on:
-        temperature, humidity, timestamp = sensor.gather()
+        # temperature, humidity, timestamp = sensor.gather()
         experiences.add(temperature, humidity, timestamp)
         experiences.save()
         experiences.saveCSV()
+
+        if len(experiences.timestamps) > 1:
+            try:
+                communication = Communication()
+                communication.send('localhost', experiences)
+                send_message = 'Sent ' + str(len(experiences.timestamps))
+                experiences.reset()
+                experiences.save()
+            except (ConnectionRefusedError, ConnectionResetError) as e:
+                send_message = e.strerror
 
     elapse = time.time() - start
 

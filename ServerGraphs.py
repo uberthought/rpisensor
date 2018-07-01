@@ -69,9 +69,9 @@ def update_output_div(input_value):
         ],
         'layout': go.Layout(
             title='2D Temperature, Humidity vs Time',
-            yaxis=dict(title='Celcius'),
+            yaxis=dict(title='C'),
             yaxis2=dict(
-                title='Relative Humidity',
+                title='%',
                 overlaying='y',
                 side='right'
             )
@@ -94,7 +94,7 @@ def update_output_pm_div(input_value):
         ],
         'layout': go.Layout(
             title='2D PM2.5, PM10 vs Time',
-            yaxis=dict(title='?'),
+            yaxis=dict(title='µm'),
         )
     }
 
